@@ -138,13 +138,13 @@ def _unserialize_extended_key(extended_key):
     prefix = int.from_bytes(extended_key[:4], "big")
     depth = extended_key[4]
     fingerprint = extended_key[4:9]
-    index = int.from_bytes(extended_key[9:14], "big")
-    chaincode, key = extended_key[14:47], extended_key[47:]
+    index = int.from_bytes(extended_key[9:13], "big")
+    chaincode, key = extended_key[13:45], extended_key[45:]
     return prefix, depth, fingerprint, index, chaincode, key
 
 
 class BIP32:
-    def __init__(self, chaincode, privkey=None, pubkey=None, index=0):
+    def __init__(self, chaincode, privkey=None, pubkey=None):
         """
         :param chaincode: The master chaincode, used to derive keys. As bytes.
         :param privkey: The master private key for this index (default 0).
@@ -153,7 +153,6 @@ class BIP32:
         :param pubkey: The master public key for this index (default 0).
                        Can be None if private key is specified.
                        Compressed format. As bytes.
-        :param index: The current index of the derivation. As int.
         """
         assert isinstance(chaincode, bytes)
         assert privkey is not None or pubkey is not None
@@ -166,7 +165,6 @@ class BIP32:
         self.master_chaincode = chaincode
         self.master_privkey = privkey
         self.master_pubkey = pubkey
-        self.master_index = index
 
     def get_hardened_privkey(self, index, depth=0):
         """Get the i-nth hardened private key of the given depth.
@@ -242,12 +240,12 @@ class BIP32:
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, key, None, index)
+        return BIP32(chaincode, key, None)
 
     @classmethod
     def from_xpub(cls, xpriv):
         """Get a BIP32 "wallet" out of this xpriv"""
-        extended_key = base58.base58decode_check(xpriv)
+        extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, None, key, index)
+        return BIP32(chaincode, None, key)
