@@ -1,3 +1,4 @@
+import base58
 import coincurve
 import hashlib
 import hmac
@@ -220,3 +221,33 @@ class BIP32:
             pubkey, chaincode = _derive_public_child(pubkey, chaincode, 0)
         pubkey, _ = _derive_public_child(pubkey, chaincode, index)
         return pubkey
+
+    def get_master_xpriv(self):
+        """Get the encoded extended private key of the master private key"""
+        extended_key = _serialize_extended_key(self.master_privkey, 0,
+                                               bytes(4), 0,
+                                               self.master_chaincode)
+        return base58.b58encode_check(extended_key)
+
+    def get_master_xpub(self):
+        """Get the encoded extended public key of the master public key"""
+        extended_key = _serialize_extended_key(self.master_pubkey, 0,
+                                               bytes(4), 0,
+                                               self.master_chaincode)
+        return base58.b58encode_check(extended_key)
+
+    @classmethod
+    def from_xpriv(cls, xpriv):
+        """Get a BIP32 "wallet" out of this xpriv"""
+        extended_key = base58.b58decode_check(xpriv)
+        (prefix, depth, fingerprint,
+         index, chaincode, key) = _unserialize_extended_key(extended_key)
+        return BIP32(chaincode, key, None, index)
+
+    @classmethod
+    def from_xpub(cls, xpriv):
+        """Get a BIP32 "wallet" out of this xpriv"""
+        extended_key = base58.base58decode_check(xpriv)
+        (prefix, depth, fingerprint,
+         index, chaincode, key) = _unserialize_extended_key(extended_key)
+        return BIP32(chaincode, None, key, index)
