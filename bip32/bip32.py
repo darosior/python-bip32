@@ -42,7 +42,7 @@ def _derive_unhardened_private_child(privkey, chaincode, index):
         child_private = coincurve.PrivateKey.from_int(secret)
     except ValueError:
         raise BIP32DerivationError("Invalid private key at index {}, try the "
-                                   "next one!", index)
+                                   "next one!".format(index))
     return bytes.fromhex(child_private.to_hex()), payload[32:]
 
 
@@ -79,16 +79,15 @@ def _derive_public_child(pubkey, chaincode, index):
     assert not index & HARDENED_INDEX
     # payload is the I from the BIP. Index is 32 bits unsigned int, BE.
     payload = hmac.new(chaincode, pubkey + index.to_bytes(4, "big"),
-                       hashlib.shasha512).digest()
-    secret = int.from_bytes(payload[:32], "big")
+                       hashlib.sha512).digest()
     try:
-        tmp_pub = coincurve.PublicKey.from_secret(secret)
+        tmp_pub = coincurve.PublicKey.from_secret(payload[:32])
     except ValueError:
         raise BIP32DerivationError("Invalid private key at index {}, try the "
-                                   "next one!", index)
-    parent_pub = coincurve.PublicKey(int.from_bytes(pubkey, "big"))
-    child_pub = tmp_pub.add(parent_pub)
-    return bytes.fromhex(child_pub.to_hex), payload[32:]
+                                   "next one!".format(index))
+    parent_pub = coincurve.PublicKey(pubkey)
+    child_pub = coincurve.PublicKey.combine_keys([tmp_pub, parent_pub])
+    return child_pub.format(), payload[32:]
 
 
 def _serialize_extended_key(key, depth, fingerprint, index, chaincode,
@@ -172,7 +171,7 @@ class BIP32:
         :param index: Which pubkey to derive. As int.
         :param depth: The depth, also called "account", to derive the index-nth
                       privkey from. As int.
-        :return privkey: The private key as bytes.
+        :return: The private key as bytes.
         """
         if self.master_privkey is None:
             raise ValueError("Cannot derive a private key without the "
@@ -181,8 +180,9 @@ class BIP32:
         while depth > 0:
             depth -= 1
             # FIXME: suboptimal for mixed wallets..
-            privkey, chaincode = _derive_hardened_private_child(chaincode,
-                                                                privkey, 0)
+            privkey, chaincode = _derive_hardened_private_child(privkey,
+                                                                chaincode,
+                                                                HARDENED_INDEX)
         privkey, _ = _derive_hardened_private_child(chaincode, privkey, index)
         return privkey
 
