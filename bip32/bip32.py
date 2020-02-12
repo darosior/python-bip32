@@ -165,13 +165,13 @@ class BIP32:
         self.master_privkey = privkey
         self.master_pubkey = pubkey
 
-    def get_hardened_privkey(self, index, depth=0):
-        """Get the i-nth hardened private key of the given depth.
+    def get_hardened_extended_privkey(self, index, depth=0):
+        """Get the i-nth hardened extended private key of the given depth.
 
         :param index: Which pubkey to derive. As int.
         :param depth: The depth, also called "account", to derive the index-nth
                       privkey from. As int.
-        :return: The private key as bytes.
+        :return: chaincode (bytes), privkey (bytes)
         """
         if self.master_privkey is None:
             raise ValueError("Cannot derive a private key without the "
@@ -183,8 +183,41 @@ class BIP32:
             privkey, chaincode = _derive_hardened_private_child(privkey,
                                                                 chaincode,
                                                                 HARDENED_INDEX)
-        privkey, _ = _derive_hardened_private_child(chaincode, privkey, index)
-        return privkey
+        if index > 0:
+            privkey, ccode = _derive_hardened_private_child(chaincode, privkey,
+                                                            index)
+        return ccode, privkey
+
+    def get_hardened_privkey(self, index, depth=0):
+        """Get the i-nth hardened private key of the given depth.
+
+        :param index: Which pubkey to derive. As int.
+        :param depth: The depth, also called "account", to derive the index-nth
+                      privkey from. As int.
+        :return: The private key as bytes.
+        """
+        return self.get_hardened_extended_privkey(index, depth)[1]
+
+    def get_unhardened_extended_privkey(self, index, depth=0):
+        """Get the i-nth *unhardened* extended private key of the given depth.
+
+        :param index: Which privkey to derive. As int.
+        :param depth: The depth (/account) to derive this index-nth private
+                      key from. As int.
+        :return: chaincode (bytes), privkey (bytes)
+        """
+        if self.master_privkey is None:
+            raise ValueError("Cannot derive a private key without the "
+                             "master key")
+        privkey, ccode = self.master_privkey, self.master_chaincode
+        while depth > 0:
+            depth -= 1
+            privkey, ccode = _derive_unhardened_private_child(privkey,
+                                                              ccode, 0)
+        if index > 0:
+            privkey, ccode = _derive_unhardened_private_child(privkey,
+                                                              ccode, index)
+        return ccode, privkey
 
     def get_unhardened_privkey(self, index, depth=0):
         """Get the i-nth *unhardened* private key of the given depth.
@@ -194,16 +227,23 @@ class BIP32:
                       key from. As int.
         :return privkey: The private key as bytes.
         """
-        if self.master_privkey is None:
-            raise ValueError("Cannot derive a private key without the "
-                             "master key")
-        privkey, ccode = self.master_privkey, self.master_chaincode
+        return self.get_unhardened_extended_privkey(index, depth)[1]
+
+    def get_extended_pubkey(self, index, depth=0):
+        """Get the i-nth extended public key of the given depth.
+
+        :param index: Which pubkey to derive. As int.
+        :param depth: The depth (/account) to derive this index-nth private
+                      key from. As int.
+        :return: chaincode (bytes), pubkey (bytes).
+        """
+        pubkey, chaincode = self.master_pubkey, self.master_chaincode
         while depth > 0:
             depth -= 1
-            privkey, ccode = _derive_unhardened_private_child(ccode,
-                                                              privkey, 0)
-        privkey, _ = _derive_unhardened_private_child(ccode, privkey, index)
-        return privkey
+            pubkey, chaincode = _derive_public_child(pubkey, chaincode, 0)
+        if index > 0:
+            pubkey, chaincode = _derive_public_child(pubkey, chaincode, index)
+        return chaincode, pubkey
 
     def get_pubkey(self, index, depth=0):
         """Get the i-nth public key of the given depth.
@@ -213,12 +253,7 @@ class BIP32:
                       key from. As int.
         :return: The pubkey as bytes.
         """
-        pubkey, chaincode = self.master_pubkey, self.master_chaincode
-        while depth > 0:
-            depth -= 1
-            pubkey, chaincode = _derive_public_child(pubkey, chaincode, 0)
-        pubkey, _ = _derive_public_child(pubkey, chaincode, index)
-        return pubkey
+        return self.get_extended_pubkey(index, depth)[1]
 
     def get_master_xpriv(self):
         """Get the encoded extended private key of the master private key"""
