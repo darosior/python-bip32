@@ -90,24 +90,35 @@ def _derive_public_child(pubkey, chaincode, index):
     return child_pub.format(), payload[32:]
 
 
-def _serialize_extended_key(key, depth, fingerprint, index, chaincode,
+def _pubkey_to_fingerprint(pubkey):
+    rip = hashlib.new("ripemd160")
+    rip.update(hashlib.sha256(pubkey).digest())
+    return rip.digest()[:4]
+
+
+def _serialize_extended_key(key, depth, parent_pubkey, index, chaincode,
                             network="main"):
     """Serialize an extended private *OR* public key, as spec by bip-0032.
 
     :param key: The public or private key to serialize. Note that if this is
                 a public key it MUST be compressed.
     :param depth: 0x00 for master nodes, 0x01 for level-1 derived keys, etc..
-    :param fingerprint: The first four bytes of the parent's pubkey.
-                        0x00000000 if master.
+    :param parent_pubkey: The parent pubkey used to derive the fingerprint.
+                          None if master.
     :param index: The index of the key being serialized. 0x00000000 if master.
     :param chaincode: The chain code (not the labs !!).
 
     :return: The serialized extended key.
     """
-    for param in {key, fingerprint, chaincode}:
+    for param in {key, chaincode}:
         assert isinstance(param, bytes)
     for param in {depth, index}:
         assert isinstance(param, int)
+    if parent_pubkey:
+        assert isinstance(parent_pubkey, bytes) and len(parent_pubkey) == 33
+        fingerprint = _pubkey_to_fingerprint(parent_pubkey)
+    else:
+        fingerprint = bytes(4)  # master
     # A privkey or a compressed pubkey
     assert len(key) in {32, 33}
     if network not in {"main", "test"}:
@@ -183,10 +194,11 @@ class BIP32:
             privkey, chaincode = _derive_hardened_private_child(privkey,
                                                                 chaincode,
                                                                 HARDENED_INDEX)
-        if index > 0:
-            privkey, ccode = _derive_hardened_private_child(chaincode, privkey,
-                                                            index)
-        return ccode, privkey
+        if index > HARDENED_INDEX:
+            privkey, chaincode = _derive_hardened_private_child(chaincode,
+                                                                privkey,
+                                                                index)
+        return chaincode, privkey
 
     def get_hardened_privkey(self, index, depth=0):
         """Get the i-nth hardened private key of the given depth.
@@ -255,19 +267,57 @@ class BIP32:
         """
         return self.get_extended_pubkey(index, depth)[1]
 
+    def get_xpriv(self, index, depth, parent_pubkey):
+        """Get the encoded extended private key from the given node
+
+        :param index: The index of the child.
+        :param depth: The depth, or the "account".
+        :param parent_pubkey: The public key of the parent of this node.
+                              None if master.
+        :return: The encoded extended pubkey as str.
+        """
+        if self.master_privkey is None:
+            raise ValueError("Cannot derive private keys without the master "
+                             "private key")
+        if index & HARDENED_INDEX:
+            chaincode, privkey = self.get_hardened_extended_privkey(index,
+                                                                    depth)
+        else:
+            chaincode, privkey = self.get_unhardened_extended_privkey(index,
+                                                                      depth)
+        extended_key = _serialize_extended_key(privkey, depth, parent_pubkey,
+                                               index, chaincode)
+        return base58.b58encode_check(extended_key)
+
+    def get_xpub(self, index, depth, parent_pubkey):
+        """Get the encoded extended public key from the given node
+
+        :param index: The index of the child.
+        :param depth: The depth, or the "account".
+        :param parent_pubkey: The public key of the parent of this node.
+                              None if master.
+        :return: The encoded extended pubkey as str.
+        """
+        if index & HARDENED_INDEX:
+            if self.master_privkey is None:
+                raise ValueError("Cannot derive a hardened public key without"
+                                 " the master private key")
+            chaincode, privkey = self.get_hardened_extended_privkey(index,
+                                                                    depth)
+            pubkey = coincurve.PublicKey.from_secret(privkey).format()
+        else:
+            chaincode, pubkey = self.get_extended_pubkey(index, depth)
+        extended_key = _serialize_extended_key(pubkey, depth, parent_pubkey,
+                                               index, chaincode)
+        return base58.b58encode_check(extended_key)
+
     def get_master_xpriv(self):
         """Get the encoded extended private key of the master private key"""
-        extended_key = _serialize_extended_key(self.master_privkey, 0,
-                                               bytes(4), 0,
-                                               self.master_chaincode)
-        return base58.b58encode_check(extended_key)
+        return self.get_xpriv(0, 0, None)
 
     def get_master_xpub(self):
         """Get the encoded extended public key of the master public key"""
-        extended_key = _serialize_extended_key(self.master_pubkey, 0,
-                                               bytes(4), 0,
-                                               self.master_chaincode)
-        return base58.b58encode_check(extended_key)
+        return self.get_xpub(0, 0, None)
 
     @classmethod
     def from_xpriv(cls, xpriv):
