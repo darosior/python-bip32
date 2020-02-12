@@ -249,3 +249,13 @@ class BIP32:
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
         return BIP32(chaincode, None, key)
+
+    @classmethod
+    def from_seed(cls, seed):
+        """Get a BIP32 "wallet" out of this seed (maybe after BIP39?)
+
+        :param seed: The seed as bytes.
+        """
+        secret = hmac.new("Bitcoin seed".encode(), seed,
+                          hashlib.sha512).digest()
+        return BIP32(secret[32:], secret[:32], None)
