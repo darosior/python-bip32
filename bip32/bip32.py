@@ -241,8 +241,8 @@ class BIP32:
         """
         return self.get_unhardened_extended_privkey(index, depth)[1]
 
-    def get_extended_pubkey(self, index, depth=0):
-        """Get the i-nth extended public key of the given depth.
+    def get_unhardened_extended_pubkey(self, index, depth=0):
+        """Get the i-nth *unhardened* extended public key of the given depth.
 
         :param index: Which pubkey to derive. As int.
         :param depth: The depth (/account) to derive this index-nth private
@@ -257,15 +257,40 @@ class BIP32:
             pubkey, chaincode = _derive_public_child(pubkey, chaincode, index)
         return chaincode, pubkey
 
-    def get_pubkey(self, index, depth=0):
-        """Get the i-nth public key of the given depth.
+    def get_unhardened_pubkey(self, index, depth=0):
+        """Get the i-nth *unhardened* public key of the given depth.
 
         :param index: Which pubkey to derive. As int.
         :param depth: The depth (/account) to derive this index-nth private
                       key from. As int.
         :return: The pubkey as bytes.
         """
-        return self.get_extended_pubkey(index, depth)[1]
+        return self.get_unhardened_extended_pubkey(index, depth)[1]
+
+    def get_hardened_extended_pubkey(self, index, depth=0):
+        """Get the i-nth *hardened* extended public key of the given depth.
+
+        :param index: Which pubkey to derive. As int.
+        :param depth: The depth (/account) to derive this index-nth private
+                      key from. As int.
+        :return: chaincode (bytes), pubkey (bytes).
+        """
+        if self.master_privkey is None:
+            raise ValueError("Cannot derive a hardened public key without"
+                             " the master private key")
+        chaincode, privkey = self.get_hardened_extended_privkey(index, depth)
+        pubkey = coincurve.PublicKey.from_secret(privkey).format()
+        return chaincode, pubkey
+
+    def get_hardened_pubkey(self, index, depth=0):
+        """Get the i-nth *hardened* public key of the given depth.
+
+        :param index: Which pubkey to derive. As int.
+        :param depth: The depth (/account) to derive this index-nth private
+                      key from. As int.
+        :return: The pubkey as bytes.
+        """
+        return self.get_hardened_extended_pubkey(index, depth)[1]
 
     def get_xpriv(self, index, depth, parent_pubkey):
         """Get the encoded extended private key from the given node
@@ -302,11 +327,11 @@ class BIP32:
             if self.master_privkey is None:
                 raise ValueError("Cannot derive a hardened public key without"
                                  " the master private key")
-            chaincode, privkey = self.get_hardened_extended_privkey(index,
-                                                                    depth)
-            pubkey = coincurve.PublicKey.from_secret(privkey).format()
+            chaincode, pubkey = self.get_hardened_extended_pubkey(index,
+                                                                  depth)
         else:
-            chaincode, pubkey = self.get_extended_pubkey(index, depth)
+            chaincode, pubkey = self.get_unhardened_extended_pubkey(index,
+                                                                    depth)
         extended_key = _serialize_extended_key(pubkey, depth, parent_pubkey,
                                                index, chaincode)
         return base58.b58encode_check(extended_key)
