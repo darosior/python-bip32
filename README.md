@@ -17,6 +17,16 @@ b'xpub6AKC3u8URPxDojLnFtNdEPFkNsXxHfgRhySvVfEJy9SVvQAn14XQjAoFY48mpjgutJNfA54GbY
 b'xpub6BZqjUq4rJ9bMGN5cwbPHWAzTg9D47fktRC3Le4J4woFcRP8KxvTDsLVoP4qpBqhtVJCvKwE98fvpCSmLA1rdchuJCN6Bxs2Pyt1k9naBhC'
 ```
 
+## Installation
+
+```
+pip install bip32
+```
+
+### Dependencies
+
+This uses [`coincurve`](https://github.com/ofek/coincurve) as a wrapper for [`libsecp256k1`](https://github.com/bitcoin-core/secp256k1), which you may have already installed anyway, for EC operations.
+
 ## Interface
 
 All public keys below are compressed.
