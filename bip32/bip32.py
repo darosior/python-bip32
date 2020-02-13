@@ -261,7 +261,7 @@ class BIP32:
         extended_key = _serialize_extended_key(privkey, len(path),
                                                parent_pubkey,
                                                path[-1], chaincode)
-        return base58.b58encode_check(extended_key)
+        return base58.b58encode_check(extended_key).decode()
 
     def get_xpub_from_path(self, path):
         """Get an encoded extended pubkey from a list of indexes (path).
@@ -280,23 +280,26 @@ class BIP32:
         extended_key = _serialize_extended_key(pubkey, len(path),
                                                parent_pubkey,
                                                path[-1], chaincode)
-        return base58.b58encode_check(extended_key)
+        return base58.b58encode_check(extended_key).decode()
 
     def get_master_xpriv(self):
         """Get the encoded extended private key of the master private key"""
         extended_key = _serialize_extended_key(self.master_privkey, 0,
                                                None, 0, self.master_chaincode)
-        return base58.b58encode_check(extended_key)
+        return base58.b58encode_check(extended_key).decode()
 
     def get_master_xpub(self):
         """Get the encoded extended public key of the master public key"""
         extended_key = _serialize_extended_key(self.master_pubkey, 0,
                                                None, 0, self.master_chaincode)
-        return base58.b58encode_check(extended_key)
+        return base58.b58encode_check(extended_key).decode()
 
     @classmethod
     def from_xpriv(cls, xpriv):
-        """Get a BIP32 "wallet" out of this xpriv"""
+        """Get a BIP32 "wallet" out of this xpriv
+
+        :param xpriv: (str) The encoded serialized extended private key.
+        """
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
@@ -304,7 +307,10 @@ class BIP32:
 
     @classmethod
     def from_xpub(cls, xpriv):
-        """Get a BIP32 "wallet" out of this xpriv"""
+        """Get a BIP32 "wallet" out of this xpub
+
+        :param xpub: (str) The encoded serialized extended public key.
+        """
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
