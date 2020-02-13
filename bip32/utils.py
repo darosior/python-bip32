@@ -20,6 +20,11 @@ class BIP32DerivationError(Exception):
     """We derived an invalid (secret > N or point(secret) is infinity) key!"""
 
 
+def _privkey_to_pubkey(privkey):
+    """Takes a 32 bytes privkey and returns a 33 bytes secp256k1 pubkey"""
+    return coincurve.PublicKey.from_secret(privkey).format()
+
+
 def _derive_unhardened_private_child(privkey, chaincode, index):
     """A.k.a CKDpriv, in bip-0032
 
@@ -31,7 +36,7 @@ def _derive_unhardened_private_child(privkey, chaincode, index):
     """
     assert isinstance(privkey, bytes) and isinstance(chaincode, bytes)
     assert not index & HARDENED_INDEX
-    pubkey = coincurve.PublicKey.from_secret(privkey).format()
+    pubkey = _privkey_to_pubkey(privkey)
     # payload is the I from the BIP. Index is 32 bits unsigned int, BE.
     payload = hmac.new(chaincode, pubkey + index.to_bytes(4, "big"),
                        hashlib.sha512).digest()

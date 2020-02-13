@@ -1,12 +1,12 @@
 import base58
-import coincurve
 import hashlib
 import hmac
 
 from .utils import (
     HARDENED_INDEX, _derive_hardened_private_child,
     _derive_unhardened_private_child, _derive_public_child,
-    _serialize_extended_key, _unserialize_extended_key, _hardened_index_in_path
+    _serialize_extended_key, _unserialize_extended_key,
+    _hardened_index_in_path, _privkey_to_pubkey
 )
 
 
@@ -28,7 +28,7 @@ class BIP32:
         if pubkey is not None:
             assert isinstance(pubkey, bytes)
         else:
-            pubkey = coincurve.PublicKey.from_secret(privkey).format()
+            pubkey = _privkey_to_pubkey(privkey)
         self.master_chaincode = chaincode
         self.master_privkey = privkey
         self.master_pubkey = pubkey
@@ -77,7 +77,7 @@ class BIP32:
                 else:
                     key, chaincode = \
                         _derive_unhardened_private_child(key, chaincode, index)
-                pubkey = coincurve.PublicKey.from_secret(key).format()
+                pubkey = _privkey_to_pubkey(key)
         # We won't need private keys for the whole path, so let's only use
         # public key derivation.
         else:
