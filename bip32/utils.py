@@ -90,7 +90,11 @@ def _derive_public_child(pubkey, chaincode, index):
         raise BIP32DerivationError("Invalid private key at index {}, try the "
                                    "next one!".format(index))
     parent_pub = coincurve.PublicKey(pubkey)
-    child_pub = coincurve.PublicKey.combine_keys([tmp_pub, parent_pub])
+    try:
+        child_pub = coincurve.PublicKey.combine_keys([tmp_pub, parent_pub])
+    except ValueError:
+        raise BIP32DerivationError("Invalid public key at index {}, try the "
+                                   "next one!".format(index))
     return child_pub.format(), payload[32:]
 
 
