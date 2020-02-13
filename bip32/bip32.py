@@ -252,7 +252,7 @@ class BIP32:
         :return: The encoded extended pubkey as str.
         """
         if len(path) == 0:
-            return self.get_master_xpub()
+            return self.get_master_xpriv()
         elif len(path) == 1:
             parent_pubkey = self.master_pubkey
         else:
