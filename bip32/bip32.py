@@ -251,13 +251,13 @@ class BIP32:
                      depth = len(path).
         :return: The encoded extended pubkey as str.
         """
-        chaincode, privkey = self.get_extended_privkey_from_path(path)
         if len(path) == 0:
             return self.get_master_xpub()
         elif len(path) == 1:
             parent_pubkey = self.master_pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
+        chaincode, privkey = self.get_extended_privkey_from_path(path)
         extended_key = _serialize_extended_key(privkey, len(path),
                                                parent_pubkey,
                                                path[-1], chaincode)
@@ -270,13 +270,13 @@ class BIP32:
                      depth = len(path).
         :return: The encoded extended pubkey as str.
         """
-        chaincode, pubkey = self.get_extended_pubkey_from_path(path)
         if len(path) == 0:
             return self.get_master_xpub()
         elif len(path) == 1:
             parent_pubkey = self.master_pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
+        chaincode, pubkey = self.get_extended_pubkey_from_path(path)
         extended_key = _serialize_extended_key(pubkey, len(path),
                                                parent_pubkey,
                                                path[-1], chaincode)
