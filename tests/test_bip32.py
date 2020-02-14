@@ -1,3 +1,5 @@
+import os
+
 from bip32 import BIP32, HARDENED_INDEX
 
 
@@ -57,3 +59,40 @@ def test_vector_3():
     # Chain m/0H
     assert (bip32.get_xpub_from_path([HARDENED_INDEX]) == "xpub68NZiKmJWnxxS6aaHmn81bvJeTESw724CRDs6HbuccFQN9Ku14VQrADWgqbhhTHBaohPX4CjNLf9fq9MYo6oDaPPLPxSb7gwQN3ih19Zm4Y")
     assert (bip32.get_xpriv_from_path([HARDENED_INDEX]) == "xprv9uPDJpEQgRQfDcW7BkF7eTya6RPxXeJCqCJGHuCJ4GiRVLzkTXBAJMu2qaMWPrS7AANYqdq6vcBcBUdJCVVFceUvJFjaPdGZ2y9WACViL4L")
+
+
+def test_sanity_tests():
+    seed = bytes.fromhex("1077a46dc8545d372f22d9e110ae6c5c2bf7620fe9c4c911f5404d112233e1aa270567dd3554092e051ba3ba86c303590b0309116ac89964ff284db2219d7511")
+    first_bip32 = BIP32.from_seed(seed)
+    sec_bip32 = BIP32.from_xpriv("xprv9s21ZrQH143K3o4KUs47P2x9afhH31ekMo2foNTYwrU9wwZ8g5EatR9bn6YmCacdvnHWMnPFUqieQrnunrzuF5UfgGbhbEW43zRnhpPDBUL")
+    assert first_bip32.get_master_xpriv() == sec_bip32.get_master_xpriv()
+    assert first_bip32.get_master_xpub() == sec_bip32.get_master_xpub()
+    # Fuzz it a bit
+    for i in range(50):
+        path = [int.from_bytes(os.urandom(3), "big") for _ in range(5)]
+        h_path = [HARDENED_INDEX + int.from_bytes(os.urandom(3), "big") for _ in range(5)]
+        mixed_path = [int.from_bytes(os.urandom(3), "big") for _ in range(5)]
+        for i in mixed_path:
+            if int.from_bytes(os.urandom(32), "big") % 2:
+                i += HARDENED_INDEX
+        assert first_bip32.get_xpriv_from_path(path) == sec_bip32.get_xpriv_from_path(path)
+        assert first_bip32.get_xpub_from_path(path) == sec_bip32.get_xpub_from_path(path)
+        assert first_bip32.get_xpriv_from_path(h_path) == sec_bip32.get_xpriv_from_path(h_path)
+        assert first_bip32.get_xpub_from_path(h_path) == sec_bip32.get_xpub_from_path(h_path)
+        assert first_bip32.get_xpriv_from_path(mixed_path) == sec_bip32.get_xpriv_from_path(mixed_path)
+        assert first_bip32.get_xpub_from_path(mixed_path) == sec_bip32.get_xpub_from_path(mixed_path)
+    # Taken from iancoleman's website
+    bip32 = BIP32.from_seed(bytes.fromhex("ac8c2377e5cde867d7e420fbe04d8906309b70d51b8fe58d6844930621a9bc223929155dcfebb4da9d62c86ec0d15adf936a663f4f0cf39cbb0352e7dac073d6"))
+    assert bip32.get_master_xpriv() == bip32.get_xpriv_from_path([]) == "xprv9s21ZrQH143K2GzaKJsW7DQsxeDpY3zqgusaSx6owWGC19k4mhwnVAsm4qPsCw43NkY2h1BzVLyxWHt9NKF86QRyBj53vModdGcNxtpD6KX"
+    assert bip32.get_master_xpub() == bip32.get_xpub_from_path([]) == "xpub661MyMwAqRbcEm53RLQWUMMcWg4JwWih48oBFLWRVqoAsx5DKFG32yCEv8iH29TWpmo5KTcpsjXcea6Zx4Hc6PAbGnHjEDCf3yHbj7qdpnf"
+    # Sanity checks for m/0'/0'/14/0'/18
+    xpriv = bip32.get_xpriv_from_path([HARDENED_INDEX, HARDENED_INDEX, 14,
+                                       HARDENED_INDEX, 18])
+    xpub = bip32.get_xpub_from_path([HARDENED_INDEX, HARDENED_INDEX, 14,
+                                     HARDENED_INDEX, 18])
+    assert xpriv == "xprvA2YVbLvEeKaPedw7F6RLwG3RgYnTq1xGCyDNMgZNWdEQnSUBQmKEuLyA6TSPsggt5xvyJHLD9L25tNLpQiP4Q8ZkQNo8ueAgeYj5zYq8hSm"
+    assert xpub == "xpub6FXqzrT8Uh8gs81aM7xMJPzAEacxEUg7aC8yA4xz4xmPfEoKxJdVT9Hdwm3LwVQrSos2rhGDt8aGGHvdLr5LLAjK8pXFkbSpzGoGTXjd4z9"
+    # Now if we our master is m/0'/0'/14, we should derive the same keys for
+    # m/0'/18 !
+    bip32 = BIP32.from_xpriv(bip32.get_xpriv_from_path([HARDENED_INDEX,
+                                                        HARDENED_INDEX, 14]))
