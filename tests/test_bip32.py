@@ -99,3 +99,4 @@ def test_sanity_tests():
     bip32 = BIP32.from_xpriv(xpriv2)
     assert bip32.get_master_xpriv() == xpriv2
     assert bip32.get_xpriv_from_path([HARDENED_INDEX, 18]) == xpriv
+    assert bip32.get_xpub_from_path([HARDENED_INDEX, 18]) == xpub
