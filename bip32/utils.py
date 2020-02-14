@@ -104,15 +104,15 @@ def _pubkey_to_fingerprint(pubkey):
     return rip.digest()[:4]
 
 
-def _serialize_extended_key(key, depth, parent_pubkey, index, chaincode,
+def _serialize_extended_key(key, depth, parent, index, chaincode,
                             network="main"):
     """Serialize an extended private *OR* public key, as spec by bip-0032.
 
     :param key: The public or private key to serialize. Note that if this is
                 a public key it MUST be compressed.
     :param depth: 0x00 for master nodes, 0x01 for level-1 derived keys, etc..
-    :param parent_pubkey: The parent pubkey used to derive the fingerprint.
-                          None if master.
+    :param parent: The parent pubkey used to derive the fingerprint, or the
+                   fingerprint itself None if master.
     :param index: The index of the key being serialized. 0x00000000 if master.
     :param chaincode: The chain code (not the labs !!).
 
@@ -122,9 +122,15 @@ def _serialize_extended_key(key, depth, parent_pubkey, index, chaincode,
         assert isinstance(param, bytes)
     for param in {depth, index}:
         assert isinstance(param, int)
-    if parent_pubkey:
-        assert isinstance(parent_pubkey, bytes) and len(parent_pubkey) == 33
-        fingerprint = _pubkey_to_fingerprint(parent_pubkey)
+    if parent:
+        assert isinstance(parent, bytes)
+        if len(parent) == 33:
+            fingerprint = _pubkey_to_fingerprint(parent)
+        elif len(parent) == 4:
+            fingerprint = parent
+        else:
+            raise ValueError("Bad parent, a fingerprint or a pubkey is"
+                             " required")
     else:
         fingerprint = bytes(4)  # master
     # A privkey or a compressed pubkey
@@ -155,7 +161,7 @@ def _unserialize_extended_key(extended_key):
     assert isinstance(extended_key, bytes) and len(extended_key) == 78
     prefix = int.from_bytes(extended_key[:4], "big")
     depth = extended_key[4]
-    fingerprint = extended_key[4:9]
+    fingerprint = extended_key[5:9]
     index = int.from_bytes(extended_key[9:13], "big")
     chaincode, key = extended_key[13:45], extended_key[45:]
     return prefix, depth, fingerprint, index, chaincode, key
@@ -163,4 +169,3 @@ def _unserialize_extended_key(extended_key):
 
 def _hardened_index_in_path(path):
     return len([i for i in path if i & HARDENED_INDEX]) > 0
-

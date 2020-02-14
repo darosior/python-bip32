@@ -94,5 +94,8 @@ def test_sanity_tests():
     assert xpub == "xpub6FXqzrT8Uh8gs81aM7xMJPzAEacxEUg7aC8yA4xz4xmPfEoKxJdVT9Hdwm3LwVQrSos2rhGDt8aGGHvdLr5LLAjK8pXFkbSpzGoGTXjd4z9"
     # Now if we our master is m/0'/0'/14, we should derive the same keys for
     # m/0'/18 !
-    bip32 = BIP32.from_xpriv(bip32.get_xpriv_from_path([HARDENED_INDEX,
-                                                        HARDENED_INDEX, 14]))
+    xpriv2 = bip32.get_xpriv_from_path([HARDENED_INDEX, HARDENED_INDEX, 14])
+    assert xpriv2 == "xprv9yQJmvQMywM5i7UNuZ4RQ1A9rEMwAJCExPardkmBCB46S3vBqNEatSwLUrwLNLHBu1Kd9aGxGKDD5YAfs6hRzpYthciAHjtGadxgV2PeqY9"
+    bip32 = BIP32.from_xpriv(xpriv2)
+    assert bip32.get_master_xpriv() == xpriv2
+    assert bip32.get_xpriv_from_path([HARDENED_INDEX, 18]) == xpriv
