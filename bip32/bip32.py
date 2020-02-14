@@ -156,18 +156,19 @@ class BIP32:
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, key, None)
+        # We need to remove the trailing `0` before the actual private key !!
+        return BIP32(chaincode, privkey=key[1:], pubkey=None)
 
     @classmethod
-    def from_xpub(cls, xpriv):
+    def from_xpub(cls, xpub):
         """Get a BIP32 "wallet" out of this xpub
 
         :param xpub: (str) The encoded serialized extended public key.
         """
-        extended_key = base58.b58decode_check(xpriv)
+        extended_key = base58.b58decode_check(xpub)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, None, key)
+        return BIP32(chaincode, privkey=None, pubkey=key)
 
     @classmethod
     def from_seed(cls, seed):
