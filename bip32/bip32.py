@@ -152,8 +152,6 @@ class BIP32:
                                                self.parent_fingerprint,
                                                self.index,
                                                self.master_chaincode)
-        print(extended_key)
-        print(base58.b58encode_check(extended_key))
         return base58.b58encode_check(extended_key).decode()
 
     def get_master_xpub(self):
@@ -170,14 +168,11 @@ class BIP32:
 
         :param xpriv: (str) The encoded serialized extended private key.
         """
-        print(xpriv)
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
         serialized = _serialize_extended_key(key[1:], depth, fingerprint, index,
                                              chaincode)
-        print(extended_key, serialized, extended_key == serialized)
-        print(base58.b58encode_check(extended_key), base58.b58encode_check(serialized), extended_key == serialized)
         # We need to remove the trailing `0` before the actual private key !!
         return BIP32(chaincode, key[1:], None, fingerprint, depth, index)
 

@@ -1,7 +1,7 @@
 from .bip32 import BIP32
 from .utils import BIP32DerivationError, HARDENED_INDEX
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 __all__ = [
     "BIP32",
