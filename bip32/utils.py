@@ -157,16 +157,20 @@ def _unserialize_extended_key(extended_key):
 
     :param extended_key: The extended key to unserialize __as bytes__
 
-    :return: prefix (int), depth (int), fingerprint (bytes), index (int),
+    :return: network (str), depth (int), fingerprint (bytes), index (int),
              chaincode (bytes), key (bytes)
     """
     assert isinstance(extended_key, bytes) and len(extended_key) == 78
     prefix = int.from_bytes(extended_key[:4], "big")
+    if prefix in list(ENCODING_PREFIX["main"].values()):
+        network = "main"
+    else:
+        network = "test"
     depth = extended_key[4]
     fingerprint = extended_key[5:9]
     index = int.from_bytes(extended_key[9:13], "big")
     chaincode, key = extended_key[13:45], extended_key[45:]
-    return prefix, depth, fingerprint, index, chaincode, key
+    return network, depth, fingerprint, index, chaincode, key
 
 
 def _hardened_index_in_path(path):

@@ -124,3 +124,23 @@ def test_sanity_tests():
     assert bip32.get_master_xpriv() == xpriv2
     assert bip32.get_xpriv_from_path([HARDENED_INDEX, 18]) == xpriv
     assert bip32.get_xpub_from_path([HARDENED_INDEX, 18]) == xpub
+    # We should recognize the networks..
+    # .. for xprivs:
+    bip32 = BIP32.from_xpriv("xprv9wHokC2KXdTSpEepFcu53hMDUHYfAtTaLEJEMyxBPAMf78hJg17WhL5FyeDUQH5KWmGjGgEb2j74gsZqgupWpPbZgP6uFmP8MYEy5BNbyET")
+    assert bip32.network == "main"
+    bip32 = BIP32.from_xpriv("tprv8ZgxMBicQKsPeCBsMzQCCb5JcW4S49MVL3EwhdZMF1RF71rgisZU4ZRvrHX6PZQEiNUABDLvYqpx8Lsccq8aGGR59qHAoLoE3iXYuDa8JTP")
+    assert bip32.network == "test"
+    # .. for xpubs:
+    bip32 = BIP32.from_xpub("xpub6AHA9hZDN11k2ijHMeS5QqHx2KP9aMBRhTDqANMnwVtdyw2TDYRmF8PjpvwUFcL1Et8Hj59S3gTSMcUQ5gAqTz3Wd8EsMTmF3DChhqPQBnU")
+    assert bip32.network == "main"
+    bip32 = BIP32.from_xpub("tpubD6NzVbkrYhZ4WN3WiKRjeo2eGyYNiKNg8vcQ1UjLNJJaDvoFhmR1XwJsbo5S4vicSPoWQBThR3Rt8grXtP47c1AnoiXMrEmFdRZupxJzH1j")
+    assert bip32.network == "test"
+    # We should create valid network encoding..
+    assert BIP32.from_seed(os.urandom(32),
+                           "test").get_master_xpub().startswith("tpub")
+    assert BIP32.from_seed(os.urandom(32),
+                           "test").get_master_xpriv().startswith("tprv")
+    assert BIP32.from_seed(os.urandom(32),
+                           "main").get_master_xpub().startswith("xpub")
+    assert BIP32.from_seed(os.urandom(32),
+                           "main").get_master_xpriv().startswith("xprv")
