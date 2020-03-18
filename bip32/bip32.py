@@ -12,7 +12,7 @@ from .utils import (
 
 class BIP32:
     def __init__(self, chaincode, privkey=None, pubkey=None, fingerprint=None,
-                 depth=0, index=0):
+                 depth=0, index=0, network="main"):
         """
         :param chaincode: The master chaincode, used to derive keys. As bytes.
         :param privkey: The master private key for this index (default 0).
@@ -28,6 +28,7 @@ class BIP32:
                       need this for serialization.
         :param index: If we are instanciated from an existing extended key, we
                       need this for serialization.
+        :param network: Either "main" or "test".
         """
         assert isinstance(chaincode, bytes)
         assert privkey is not None or pubkey is not None
@@ -43,6 +44,7 @@ class BIP32:
         self.parent_fingerprint = fingerprint
         self.depth = depth
         self.index = index
+        self.network = network
 
     def get_extended_privkey_from_path(self, path):
         """Get an extended privkey from a list of indexes (path).
@@ -124,7 +126,8 @@ class BIP32:
         chaincode, privkey = self.get_extended_privkey_from_path(path)
         extended_key = _serialize_extended_key(privkey, self.depth + len(path),
                                                parent_pubkey,
-                                               path[-1], chaincode)
+                                               path[-1], chaincode,
+                                               self.network)
         return base58.b58encode_check(extended_key).decode()
 
     def get_xpub_from_path(self, path):
@@ -143,7 +146,8 @@ class BIP32:
         chaincode, pubkey = self.get_extended_pubkey_from_path(path)
         extended_key = _serialize_extended_key(pubkey, self.depth + len(path),
                                                parent_pubkey,
-                                               path[-1], chaincode)
+                                               path[-1], chaincode,
+                                               self.network)
         return base58.b58encode_check(extended_key).decode()
 
     def get_master_xpriv(self):
@@ -151,7 +155,8 @@ class BIP32:
         extended_key = _serialize_extended_key(self.master_privkey, self.depth,
                                                self.parent_fingerprint,
                                                self.index,
-                                               self.master_chaincode)
+                                               self.master_chaincode,
+                                               self.network)
         return base58.b58encode_check(extended_key).decode()
 
     def get_master_xpub(self):
@@ -159,7 +164,8 @@ class BIP32:
         extended_key = _serialize_extended_key(self.master_pubkey, self.depth,
                                                self.parent_fingerprint,
                                                self.index,
-                                               self.master_chaincode)
+                                               self.master_chaincode,
+                                               self.network)
         return base58.b58encode_check(extended_key).decode()
 
     @classmethod
@@ -171,8 +177,6 @@ class BIP32:
         extended_key = base58.b58decode_check(xpriv)
         (prefix, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
-        serialized = _serialize_extended_key(key[1:], depth, fingerprint, index,
-                                             chaincode)
         # We need to remove the trailing `0` before the actual private key !!
         return BIP32(chaincode, key[1:], None, fingerprint, depth, index)
 
@@ -188,11 +192,11 @@ class BIP32:
         return BIP32(chaincode, None, key, fingerprint, depth, index)
 
     @classmethod
-    def from_seed(cls, seed):
+    def from_seed(cls, seed, network="main"):
         """Get a BIP32 "wallet" out of this seed (maybe after BIP39?)
 
         :param seed: The seed as bytes.
         """
         secret = hmac.new("Bitcoin seed".encode(), seed,
                           hashlib.sha512).digest()
-        return BIP32(secret[32:], secret[:32])
+        return BIP32(secret[32:], secret[:32], network=network)
