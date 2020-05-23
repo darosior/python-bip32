@@ -6,7 +6,7 @@ from .utils import (
     HARDENED_INDEX, _derive_hardened_private_child,
     _derive_unhardened_private_child, _derive_public_child,
     _serialize_extended_key, _unserialize_extended_key,
-    _hardened_index_in_path, _privkey_to_pubkey
+    _hardened_index_in_path, _privkey_to_pubkey, _deriv_path_str_to_list
 )
 
 
@@ -47,12 +47,14 @@ class BIP32:
         self.network = network
 
     def get_extended_privkey_from_path(self, path):
-        """Get an extended privkey from a list of indexes (path).
+        """Get an extended privkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: chaincode (bytes), privkey (bytes)
         """
+        if isinstance(path, str):
+            path = _deriv_path_str_to_list(path)
         chaincode, privkey = self.master_chaincode, self.master_privkey
         for index in path:
             if index & HARDENED_INDEX:
@@ -64,21 +66,23 @@ class BIP32:
         return chaincode, privkey
 
     def get_privkey_from_path(self, path):
-        """Get a privkey from a list of indexes (path).
+        """Get a privkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: privkey (bytes)
         """
         return self.get_extended_privkey_from_path(path)[1]
 
     def get_extended_pubkey_from_path(self, path):
-        """Get an extended pubkey from a list of indexes (path).
+        """Get an extended pubkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: chaincode (bytes), pubkey (bytes)
         """
+        if isinstance(path, str):
+            path = _deriv_path_str_to_list(path)
         chaincode, key = self.master_chaincode, self.master_privkey
         # We'll need the private key at some point anyway, so let's derive
         # everything from private keys.
@@ -102,21 +106,23 @@ class BIP32:
         return chaincode, pubkey
 
     def get_pubkey_from_path(self, path):
-        """Get a privkey from a list of indexes (path).
+        """Get a privkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: privkey (bytes)
         """
         return self.get_extended_pubkey_from_path(path)[1]
 
     def get_xpriv_from_path(self, path):
-        """Get an encoded extended privkey from a list of indexes (path).
+        """Get an encoded extended privkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: The encoded extended pubkey as str.
         """
+        if isinstance(path, str):
+            path = _deriv_path_str_to_list(path)
         if len(path) == 0:
             return self.get_master_xpriv()
         elif len(path) == 1:
@@ -131,12 +137,14 @@ class BIP32:
         return base58.b58encode_check(extended_key).decode()
 
     def get_xpub_from_path(self, path):
-        """Get an encoded extended pubkey from a list of indexes (path).
+        """Get an encoded extended pubkey from a derivation path.
 
-        :param path: A list of integers (index of each depth).
-                     depth = len(path).
+        :param path: A list of integers (index of each depth) or a string with
+                     m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: The encoded extended pubkey as str.
         """
+        if isinstance(path, str):
+            path = _deriv_path_str_to_list(path)
         if len(path) == 0:
             return self.get_master_xpub()
         elif len(path) == 1:
