@@ -7,14 +7,25 @@ A basic implementation of the [bip-0032](https://github.com/bitcoin/bips/blob/ma
 ```python
 >>> from bip32 import BIP32, HARDENED_INDEX
 >>> bip32 = BIP32.from_seed(bytes.fromhex("01"))
->>> bip32.get_xpriv_from_path([1, HARDENED_INDEX, 9998]) # m/1/0'/9998
-b'xprv9y4sBgCuub5x2DtbdNBDDCZ3btybk8YZZaTvzV5rmYd3PbU63XLo2QEj6cUt4JAqpF8gJiRKFUW8Vm7thPkccW2DpUvBxASycypEHxmZzts'
->>> bip32 = BIP32.from_xpriv("xprv9y4sBgCuub5x2DtbdNBDDCZ3btybk8YZZaTvzV5rmYd3PbU63XLo2QEj6cUt4JAqpF8gJiRKFUW8Vm7thPkccW2DpUvBxASycypEHxmZzts")
->>> bip32.get_xpub_from_path([HARDENED_INDEX, 42]) # m/0'/42
-b'xpub6AKC3u8URPxDojLnFtNdEPFkNsXxHfgRhySvVfEJy9SVvQAn14XQjAoFY48mpjgutJNfA54GbYYRpR26tFEJHTHhfiiZZ2wdBBzydVp12yU'
+# Specify the derivation path as a list ...
+>>> bip32.get_xpriv_from_path([1, HARDENED_INDEX, 9998])
+'xprv9y4sBgCuub5x2DtbdNBDDCZ3btybk8YZZaTvzV5rmYd3PbU63XLo2QEj6cUt4JAqpF8gJiRKFUW8Vm7thPkccW2DpUvBxASycypEHxmZzts'
+# ... Or in usual m/the/path/
+>>> bip32.get_xpriv_from_path("m/1/0'/9998")
+'xprv9y4sBgCuub5x2DtbdNBDDCZ3btybk8YZZaTvzV5rmYd3PbU63XLo2QEj6cUt4JAqpF8gJiRKFUW8Vm7thPkccW2DpUvBxASycypEHxmZzts'
+>>> bip32.get_xpub_from_path([HARDENED_INDEX, 42])
+'xpub69uEaVYoN1mZyMon8qwRP41YjYyevp3YxJ68ymBGV7qmXZ9rsbMy9kBZnLNPg3TLjKd2EnMw5BtUFQCGrTVDjQok859LowMV2SEooseLCt1'
+# You can also use "h" or "H" to signal for hardened derivation
+>>> bip32.get_xpub_from_path("m/0h/42")
+'xpub69uEaVYoN1mZyMon8qwRP41YjYyevp3YxJ68ymBGV7qmXZ9rsbMy9kBZnLNPg3TLjKd2EnMw5BtUFQCGrTVDjQok859LowMV2SEooseLCt1'
+# You can use pubkey-only derivation
 >>> bip32 = BIP32.from_xpub("xpub6AKC3u8URPxDojLnFtNdEPFkNsXxHfgRhySvVfEJy9SVvQAn14XQjAoFY48mpjgutJNfA54GbYYRpR26tFEJHTHhfiiZZ2wdBBzydVp12yU")
->>> bip32.get_xpub_from_path([42, 43]) # pubkey-only derivation: m/42/43
-b'xpub6BZqjUq4rJ9bMGN5cwbPHWAzTg9D47fktRC3Le4J4woFcRP8KxvTDsLVoP4qpBqhtVJCvKwE98fvpCSmLA1rdchuJCN6Bxs2Pyt1k9naBhC'
+>>> bip32.get_xpub_from_path([42, 43])
+'xpub6FL7T3s7GuVb4od1gvWuumhg47y6TZtf2DSr6ModQpX4UFGkQXw8oEVhJXcXJ4edmtAWCTrefD64B9RP4sYSkSumTW1wadTS3SYurBGYccT'
+>>> bip32.get_xpub_from_path("m/42/43")
+'xpub6FL7T3s7GuVb4od1gvWuumhg47y6TZtf2DSr6ModQpX4UFGkQXw8oEVhJXcXJ4edmtAWCTrefD64B9RP4sYSkSumTW1wadTS3SYurBGYccT'
+>>> bip32.get_pubkey_from_path("m/1/1/1/1/1/1/1/1/1/1/1")
+b'\x02\x0c\xac\n\xa8\x06\x96C\x8e\x9b\xcf\x83]\x0c\rCm\x06\x1c\xe9T\xealo\xa2\xdf\x195\xebZ\x9b\xb8\x9e'
 ```
 
 ## Installation
