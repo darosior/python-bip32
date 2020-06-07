@@ -47,7 +47,7 @@ def _derive_unhardened_private_child(privkey, chaincode, index):
     except ValueError:
         raise BIP32DerivationError("Invalid private key at index {}, try the "
                                    "next one!".format(index))
-    return bytes.fromhex(child_private.to_hex()), payload[32:]
+    return child_private.secret, payload[32:]
 
 
 def _derive_hardened_private_child(privkey, chaincode, index):
@@ -69,7 +69,7 @@ def _derive_hardened_private_child(privkey, chaincode, index):
     except ValueError:
         raise BIP32DerivationError("Invalid private key at index {}, try the "
                                    "next one!".format(index))
-    return bytes.fromhex(child_private.to_hex()), payload[32:]
+    return child_private.secret, payload[32:]
 
 
 def _derive_public_child(pubkey, chaincode, index):
