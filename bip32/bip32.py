@@ -17,6 +17,11 @@ class PrivateDerivationError(ValueError):
     pass
 
 
+class InvalidInputError(ValueError):
+    def __init__(self, message):
+        self.message = message
+
+
 class BIP32:
     def __init__(self, chaincode, privkey=None, pubkey=None, fingerprint=None,
                  depth=0, index=0, network="main"):
@@ -37,14 +42,21 @@ class BIP32:
                       need this for serialization.
         :param network: Either "main" or "test".
         """
-        assert isinstance(chaincode, bytes)
-        assert privkey is not None or pubkey is not None
+        if network not in ["main", "test"]:
+            raise InvalidInputError("'network' must be one of 'main' or 'test'")
+        if not isinstance(chaincode, bytes):
+            raise InvalidInputError("'chaincode' must be bytes")
+        if privkey is None and pubkey is None:
+            raise InvalidInputError("Need at least a 'pubkey' or a 'privkey'")
         if privkey is not None:
-            assert isinstance(privkey, bytes)
+            if not isinstance(privkey, bytes):
+                raise InvalidInputError("'privkey' must be bytes")
         if pubkey is not None:
-            assert isinstance(pubkey, bytes)
+            if not isinstance(pubkey, bytes):
+                raise InvalidInputError("'pubkey' must be bytes")
         else:
             pubkey = _privkey_to_pubkey(privkey)
+
         self.master_chaincode = chaincode
         self.master_privkey = privkey
         self.master_pubkey = pubkey
@@ -213,6 +225,9 @@ class BIP32:
 
         :param xpriv: (str) The encoded serialized extended private key.
         """
+        if not isinstance(xpriv, str):
+            raise InvalidInputError("'xpriv' must be a string")
+
         extended_key = base58.b58decode_check(xpriv)
         (network, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
@@ -226,6 +241,9 @@ class BIP32:
 
         :param xpub: (str) The encoded serialized extended public key.
         """
+        if not isinstance(xpub, str):
+            raise InvalidInputError("'xpub' must be a string")
+
         extended_key = base58.b58decode_check(xpub)
         (network, depth, fingerprint,
          index, chaincode, key) = _unserialize_extended_key(extended_key)
