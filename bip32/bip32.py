@@ -84,6 +84,7 @@ class BIP32:
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
         chaincode, key = self.master_chaincode, self.master_privkey
+        pubkey = self.master_pubkey
         # We'll need the private key at some point anyway, so let's derive
         # everything from private keys.
         if _hardened_index_in_path(path):
@@ -98,15 +99,13 @@ class BIP32:
         # We won't need private keys for the whole path, so let's only use
         # public key derivation.
         else:
-            key = self.master_pubkey
             for index in path:
-                key, chaincode = \
-                    _derive_public_child(key, chaincode, index)
-                pubkey = key
+                pubkey, chaincode = \
+                    _derive_public_child(pubkey, chaincode, index)
         return chaincode, pubkey
 
     def get_pubkey_from_path(self, path):
-        """Get a privkey from a derivation path.
+        """Get a pubkey from a derivation path.
 
         :param path: A list of integers (index of each depth) or a string with
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).

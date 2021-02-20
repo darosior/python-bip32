@@ -1,4 +1,6 @@
+import coincurve
 import os
+import pytest
 
 from bip32 import BIP32, HARDENED_INDEX
 
@@ -85,7 +87,7 @@ def test_vector_3():
     assert (bip32.get_xpriv_from_path("m/0H") == bip32.get_xpriv_from_path([HARDENED_INDEX]))
 
 
-def test_sanity_tests():
+def test_sanity_checks():
     seed = bytes.fromhex("1077a46dc8545d372f22d9e110ae6c5c2bf7620fe9c4c911f5404d112233e1aa270567dd3554092e051ba3ba86c303590b0309116ac89964ff284db2219d7511")
     first_bip32 = BIP32.from_seed(seed)
     sec_bip32 = BIP32.from_xpriv("xprv9s21ZrQH143K3o4KUs47P2x9afhH31ekMo2foNTYwrU9wwZ8g5EatR9bn6YmCacdvnHWMnPFUqieQrnunrzuF5UfgGbhbEW43zRnhpPDBUL")
@@ -105,6 +107,7 @@ def test_sanity_tests():
         assert first_bip32.get_xpub_from_path(h_path) == sec_bip32.get_xpub_from_path(h_path)
         assert first_bip32.get_xpriv_from_path(mixed_path) == sec_bip32.get_xpriv_from_path(mixed_path)
         assert first_bip32.get_xpub_from_path(mixed_path) == sec_bip32.get_xpub_from_path(mixed_path)
+
     # Taken from iancoleman's website
     bip32 = BIP32.from_seed(bytes.fromhex("ac8c2377e5cde867d7e420fbe04d8906309b70d51b8fe58d6844930621a9bc223929155dcfebb4da9d62c86ec0d15adf936a663f4f0cf39cbb0352e7dac073d6"))
     assert bip32.get_master_xpriv() == bip32.get_xpriv_from_path([]) == "xprv9s21ZrQH143K2GzaKJsW7DQsxeDpY3zqgusaSx6owWGC19k4mhwnVAsm4qPsCw43NkY2h1BzVLyxWHt9NKF86QRyBj53vModdGcNxtpD6KX"
@@ -124,6 +127,7 @@ def test_sanity_tests():
     assert bip32.get_master_xpriv() == xpriv2
     assert bip32.get_xpriv_from_path([HARDENED_INDEX, 18]) == xpriv
     assert bip32.get_xpub_from_path([HARDENED_INDEX, 18]) == xpub
+
     # We should recognize the networks..
     # .. for xprivs:
     bip32 = BIP32.from_xpriv("xprv9wHokC2KXdTSpEepFcu53hMDUHYfAtTaLEJEMyxBPAMf78hJg17WhL5FyeDUQH5KWmGjGgEb2j74gsZqgupWpPbZgP6uFmP8MYEy5BNbyET")
@@ -135,6 +139,7 @@ def test_sanity_tests():
     assert bip32.network == "main"
     bip32 = BIP32.from_xpub("tpubD6NzVbkrYhZ4WN3WiKRjeo2eGyYNiKNg8vcQ1UjLNJJaDvoFhmR1XwJsbo5S4vicSPoWQBThR3Rt8grXtP47c1AnoiXMrEmFdRZupxJzH1j")
     assert bip32.network == "test"
+
     # We should create valid network encoding..
     assert BIP32.from_seed(os.urandom(32),
                            "test").get_master_xpub().startswith("tpub")
@@ -144,3 +149,16 @@ def test_sanity_tests():
                            "main").get_master_xpub().startswith("xpub")
     assert BIP32.from_seed(os.urandom(32),
                            "main").get_master_xpriv().startswith("xprv")
+
+    # We can get the keys from "m" or []
+    bip32 = BIP32.from_seed(os.urandom(32))
+    assert (bip32.get_master_xpub() == bip32.get_xpub_from_path("m") ==
+            bip32.get_xpub_from_path([]))
+    assert (bip32.get_master_xpriv() == bip32.get_xpriv_from_path("m") ==
+            bip32.get_xpriv_from_path([]))
+    master_non_extended_pubkey =  bip32.get_privkey_from_path("m")
+    pubkey = coincurve.PublicKey.from_secret(master_non_extended_pubkey)
+    assert pubkey.format() == bip32.get_pubkey_from_path("m")
+    # But getting from "m'" does not make sense
+    with pytest.raises(ValueError, match="invalid format"):
+        bip32.get_pubkey_from_path("m'")
