@@ -2,7 +2,9 @@ import coincurve
 import os
 import pytest
 
-from bip32 import BIP32, HARDENED_INDEX
+from bip32 import (
+    BIP32, HARDENED_INDEX, PrivateDerivationError, InvalidInputError
+)
 
 
 def test_vector_1():
@@ -162,3 +164,19 @@ def test_sanity_checks():
     # But getting from "m'" does not make sense
     with pytest.raises(ValueError, match="invalid format"):
         bip32.get_pubkey_from_path("m'")
+
+    # We raise if we attempt to use a privkey without privkey access
+    bip32 = BIP32.from_xpub("xpub6C6zm7YgrLrnd7gXkyYDjQihT6F2ei9EYbNuSiDAjok7Ht56D5zbnv8WDoAJGg1RzKzK4i9U2FUwXG7TFGETFc35vpQ4sZBuYKntKMLshiq")
+    bip32.get_master_xpub()
+    bip32.get_pubkey_from_path("m/0/1")
+    bip32.get_xpub_from_path("m/10000/18")
+    with pytest.raises(PrivateDerivationError):
+        bip32.get_master_xpriv()
+        bip32.get_extended_privkey_from_path("m/0/1/2")
+        bip32.get_privkey_from_path([9, 8])
+        bip32.get_pubkey_from_path("m/0'/1")
+        bip32.get_xpub_from_path("m/10000'/18")
+
+    # We can't create a BIP32 for an unknown network (to test InvalidInputError)
+    with pytest.raises(InvalidInputError, match="'network' must be one of"):
+        BIP32.from_seed(os.urandom(32), network="invalid_net")
