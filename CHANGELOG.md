@@ -1,3 +1,7 @@
+## Next
+
+- Added test vector #4 for private keys with leading zeros (see https://github.com/bitcoin/bips/pull/1030)
+
 ## 0.1
 
 - Started to use a changelog
