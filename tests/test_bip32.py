@@ -89,6 +89,20 @@ def test_vector_3():
     assert (bip32.get_xpriv_from_path("m/0H") == bip32.get_xpriv_from_path([HARDENED_INDEX]))
 
 
+def test_vector_4():
+    seed = bytes.fromhex("3ddd5602285899a946114506157c7997e5444528f3003f6134712147db19b678")
+    bip32 = BIP32.from_seed(seed)
+    # Chain m
+    assert bip32.get_xpub_from_path("m") == "xpub661MyMwAqRbcGczjuMoRm6dXaLDEhW1u34gKenbeYqAix21mdUKJyuyu5F1rzYGVxyL6tmgBUAEPrEz92mBXjByMRiJdba9wpnN37RLLAXa"
+    assert bip32.get_xpriv_from_path("m") == "xprv9s21ZrQH143K48vGoLGRPxgo2JNkJ3J3fqkirQC2zVdk5Dgd5w14S7fRDyHH4dWNHUgkvsvNDCkvAwcSHNAQwhwgNMgZhLtQC63zxwhQmRv"
+    # Chain m/0/H
+    assert bip32.get_xpub_from_path("m/0h") == "xpub69AUMk3qDBi3uW1sXgjCmVjJ2G6WQoYSnNHyzkmdCHEhSZ4tBok37xfFEqHd2AddP56Tqp4o56AePAgCjYdvpW2PU2jbUPFKsav5ut6Ch1m"
+    assert bip32.get_xpriv_from_path("m/0h") == "xprv9vB7xEWwNp9kh1wQRfCCQMnZUEG21LpbR9NPCNN1dwhiZkjjeGRnaALmPXCX7SgjFTiCTT6bXes17boXtjq3xLpcDjzEuGLQBM5ohqkao9G"
+    # Chain m/0H/1H
+    assert bip32.get_xpub_from_path("m/0h/1h") == "xpub6BJA1jSqiukeaesWfxe6sNK9CCGaujFFSJLomWHprUL9DePQ4JDkM5d88n49sMGJxrhpjazuXYWdMf17C9T5XnxkopaeS7jGk1GyyVziaMt"
+    assert bip32.get_xpriv_from_path("m/0h/1h") == "xprv9xJocDuwtYCMNAo3Zw76WENQeAS6WGXQ55RCy7tDJ8oALr4FWkuVoHJeHVAcAqiZLE7Je3vZJHxspZdFHfnBEjHqU5hG1Jaj32dVoS6XLT1"
+
+
 def test_sanity_checks():
     seed = bytes.fromhex("1077a46dc8545d372f22d9e110ae6c5c2bf7620fe9c4c911f5404d112233e1aa270567dd3554092e051ba3ba86c303590b0309116ac89964ff284db2219d7511")
     first_bip32 = BIP32.from_seed(seed)
