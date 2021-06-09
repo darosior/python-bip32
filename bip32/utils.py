@@ -40,13 +40,15 @@ def _derive_unhardened_private_child(privkey, chaincode, index):
     assert not index & HARDENED_INDEX
     pubkey = _privkey_to_pubkey(privkey)
     # payload is the I from the BIP. Index is 32 bits unsigned int, BE.
-    payload = hmac.new(chaincode, pubkey + index.to_bytes(4, "big"),
-                       hashlib.sha512).digest()
+    payload = hmac.new(
+        chaincode, pubkey + index.to_bytes(4, "big"), hashlib.sha512
+    ).digest()
     try:
         child_private = coincurve.PrivateKey(payload[:32]).add(privkey)
     except ValueError:
-        raise BIP32DerivationError("Invalid private key at index {}, try the "
-                                   "next one!".format(index))
+        raise BIP32DerivationError(
+            "Invalid private key at index {}, try the " "next one!".format(index)
+        )
     return child_private.secret, payload[32:]
 
 
@@ -62,13 +64,15 @@ def _derive_hardened_private_child(privkey, chaincode, index):
     assert isinstance(privkey, bytes) and isinstance(chaincode, bytes)
     assert index & HARDENED_INDEX
     # payload is the I from the BIP. Index is 32 bits unsigned int, BE.
-    payload = hmac.new(chaincode, b'\x00' + privkey + index.to_bytes(4, "big"),
-                       hashlib.sha512).digest()
+    payload = hmac.new(
+        chaincode, b"\x00" + privkey + index.to_bytes(4, "big"), hashlib.sha512
+    ).digest()
     try:
         child_private = coincurve.PrivateKey(payload[:32]).add(privkey)
     except ValueError:
-        raise BIP32DerivationError("Invalid private key at index {}, try the "
-                                   "next one!".format(index))
+        raise BIP32DerivationError(
+            "Invalid private key at index {}, try the " "next one!".format(index)
+        )
     return child_private.secret, payload[32:]
 
 
@@ -84,19 +88,22 @@ def _derive_public_child(pubkey, chaincode, index):
     assert isinstance(pubkey, bytes) and isinstance(chaincode, bytes)
     assert not index & HARDENED_INDEX
     # payload is the I from the BIP. Index is 32 bits unsigned int, BE.
-    payload = hmac.new(chaincode, pubkey + index.to_bytes(4, "big"),
-                       hashlib.sha512).digest()
+    payload = hmac.new(
+        chaincode, pubkey + index.to_bytes(4, "big"), hashlib.sha512
+    ).digest()
     try:
         tmp_pub = coincurve.PublicKey.from_secret(payload[:32])
     except ValueError:
-        raise BIP32DerivationError("Invalid private key at index {}, try the "
-                                   "next one!".format(index))
+        raise BIP32DerivationError(
+            "Invalid private key at index {}, try the " "next one!".format(index)
+        )
     parent_pub = coincurve.PublicKey(pubkey)
     try:
         child_pub = coincurve.PublicKey.combine_keys([tmp_pub, parent_pub])
     except ValueError:
-        raise BIP32DerivationError("Invalid public key at index {}, try the "
-                                   "next one!".format(index))
+        raise BIP32DerivationError(
+            "Invalid public key at index {}, try the " "next one!".format(index)
+        )
     return child_pub.format(), payload[32:]
 
 
@@ -106,8 +113,7 @@ def _pubkey_to_fingerprint(pubkey):
     return rip.digest()[:4]
 
 
-def _serialize_extended_key(key, depth, parent, index, chaincode,
-                            network="main"):
+def _serialize_extended_key(key, depth, parent, index, chaincode, network="main"):
     """Serialize an extended private *OR* public key, as spec by bip-0032.
 
     :param key: The public or private key to serialize. Note that if this is
@@ -131,8 +137,7 @@ def _serialize_extended_key(key, depth, parent, index, chaincode,
         elif len(parent) == 4:
             fingerprint = parent
         else:
-            raise ValueError("Bad parent, a fingerprint or a pubkey is"
-                             " required")
+            raise ValueError("Bad parent, a fingerprint or a pubkey is" " required")
     else:
         fingerprint = bytes(4)  # master
     # A privkey or a compressed pubkey
@@ -147,7 +152,7 @@ def _serialize_extended_key(key, depth, parent, index, chaincode,
     extended += index.to_bytes(4, "big")
     extended += chaincode
     if is_privkey:
-        extended += b'\x00'
+        extended += b"\x00"
     extended += key
     return extended
 
@@ -188,7 +193,7 @@ def _deriv_path_str_to_list(strpath):
     """
     if not REGEX_DERIVATION_PATH.match(strpath):
         raise ValueError("invalid format")
-    indexes = strpath.split('/')[1:]
+    indexes = strpath.split("/")[1:]
     list_path = []
     for i in indexes:
         # if HARDENED
