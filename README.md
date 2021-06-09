@@ -38,6 +38,16 @@ pip install bip32
 
 This uses [`coincurve`](https://github.com/ofek/coincurve) as a wrapper for [`libsecp256k1`](https://github.com/bitcoin-core/secp256k1) for EC operations.
 
+### Running the test suite
+
+```
+# From the root of the repository
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt && pip install pytest
+PYTHONPATH=$PYTHONPATH:$PWD/bip32 pytest -vvv
+```
+
 ## Interface
 
 All public keys below are compressed.

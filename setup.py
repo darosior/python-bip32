@@ -11,7 +11,7 @@ with io.open("requirements.txt", encoding="utf-8") as f:
 
 setup(name="bip32",
       version=bip32.__version__,
-      description="Python implementation of the BIP32 key derivation scheme",
+      description="Minimalistic implementation of the BIP32 key derivation scheme",
       long_description=long_description,
       long_description_content_type="text/markdown",
       url="http://github.com/darosior/python-bip32",

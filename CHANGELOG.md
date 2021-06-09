@@ -1,6 +1,8 @@
-## Next
+## 1.0
 
 - Added test vector #4 for private keys with leading zeros (see https://github.com/bitcoin/bips/pull/1030)
+- (**Breaking**) Bumped Coincurve dependency to `0.15`
+- Re-arranged the 2 dependencies to use "compatible release" notation
 
 ## 0.1
 
