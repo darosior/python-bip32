@@ -112,10 +112,10 @@ path.
 Note that you don't need to have provided the master private key if the path doesn't
 include an index `>= HARDENED_INDEX`.
 
-### get_master_xpriv(path)
+### get_xpriv(path)
 
 Equivalent to `get_xpriv_from_path([])`.
 
-### get_master_xpub(path)
+### get_xpub(path)
 
 Equivalent to `get_xpub_from_path([])`.

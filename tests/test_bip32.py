@@ -10,11 +10,11 @@ def test_vector_1():
     bip32 = BIP32.from_seed(seed)
     # Chain m
     assert (
-        bip32.get_master_xpub()
+        bip32.get_xpub()
         == "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8"
     )
     assert (
-        bip32.get_master_xpriv()
+        bip32.get_xpriv()
         == "xprv9s21ZrQH143K3QTDL4LXw2F7HEK3wJUD2nW2nRk4stbPy6cq3jPPqjiChkVvvNKmPGJxWUtg6LnF5kejMRNNU3TGtRBeJgk33yuGBxrMPHi"
     )
     # Chain m/0H
@@ -109,11 +109,11 @@ def test_vector_2():
     bip32 = BIP32.from_seed(seed)
     # Chain m
     assert (
-        bip32.get_master_xpub()
+        bip32.get_xpub()
         == "xpub661MyMwAqRbcFW31YEwpkMuc5THy2PSt5bDMsktWQcFF8syAmRUapSCGu8ED9W6oDMSgv6Zz8idoc4a6mr8BDzTJY47LJhkJ8UB7WEGuduB"
     )
     assert (
-        bip32.get_master_xpriv()
+        bip32.get_xpriv()
         == "xprv9s21ZrQH143K31xYSDQpPDxsXRTUcvj2iNHm5NUtrGiGG5e2DtALGdso3pGz6ssrdK4PFmM8NSpSBHNqPqm55Qn3LqFtT2emdEXVYsCzC2U"
     )
     # Chain m/0
@@ -312,8 +312,8 @@ def test_sanity_checks():
     sec_bip32 = BIP32.from_xpriv(
         "xprv9s21ZrQH143K3o4KUs47P2x9afhH31ekMo2foNTYwrU9wwZ8g5EatR9bn6YmCacdvnHWMnPFUqieQrnunrzuF5UfgGbhbEW43zRnhpPDBUL"
     )
-    assert first_bip32.get_master_xpriv() == sec_bip32.get_master_xpriv()
-    assert first_bip32.get_master_xpub() == sec_bip32.get_master_xpub()
+    assert first_bip32.get_xpriv() == sec_bip32.get_xpriv()
+    assert first_bip32.get_xpub() == sec_bip32.get_xpub()
     # Fuzz it a bit
     for i in range(50):
         path = [int.from_bytes(os.urandom(3), "big") for _ in range(5)]
@@ -350,12 +350,12 @@ def test_sanity_checks():
         )
     )
     assert (
-        bip32.get_master_xpriv()
+        bip32.get_xpriv()
         == bip32.get_xpriv_from_path([])
         == "xprv9s21ZrQH143K2GzaKJsW7DQsxeDpY3zqgusaSx6owWGC19k4mhwnVAsm4qPsCw43NkY2h1BzVLyxWHt9NKF86QRyBj53vModdGcNxtpD6KX"
     )
     assert (
-        bip32.get_master_xpub()
+        bip32.get_xpub()
         == bip32.get_xpub_from_path([])
         == "xpub661MyMwAqRbcEm53RLQWUMMcWg4JwWih48oBFLWRVqoAsx5DKFG32yCEv8iH29TWpmo5KTcpsjXcea6Zx4Hc6PAbGnHjEDCf3yHbj7qdpnf"
     )
@@ -382,7 +382,7 @@ def test_sanity_checks():
         == "xprv9yQJmvQMywM5i7UNuZ4RQ1A9rEMwAJCExPardkmBCB46S3vBqNEatSwLUrwLNLHBu1Kd9aGxGKDD5YAfs6hRzpYthciAHjtGadxgV2PeqY9"
     )
     bip32 = BIP32.from_xpriv(xpriv2)
-    assert bip32.get_master_xpriv() == xpriv2
+    assert bip32.get_xpriv() == xpriv2
     assert bip32.get_xpriv_from_path([HARDENED_INDEX, 18]) == xpriv
     assert bip32.get_xpub_from_path([HARDENED_INDEX, 18]) == xpub
 
@@ -407,25 +407,25 @@ def test_sanity_checks():
     assert bip32.network == "test"
 
     # We should create valid network encoding..
-    assert BIP32.from_seed(os.urandom(32), "test").get_master_xpub().startswith("tpub")
-    assert BIP32.from_seed(os.urandom(32), "test").get_master_xpriv().startswith("tprv")
-    assert BIP32.from_seed(os.urandom(32), "main").get_master_xpub().startswith("xpub")
-    assert BIP32.from_seed(os.urandom(32), "main").get_master_xpriv().startswith("xprv")
+    assert BIP32.from_seed(os.urandom(32), "test").get_xpub().startswith("tpub")
+    assert BIP32.from_seed(os.urandom(32), "test").get_xpriv().startswith("tprv")
+    assert BIP32.from_seed(os.urandom(32), "main").get_xpub().startswith("xpub")
+    assert BIP32.from_seed(os.urandom(32), "main").get_xpriv().startswith("xprv")
 
     # We can get the keys from "m" or []
     bip32 = BIP32.from_seed(os.urandom(32))
     assert (
-        bip32.get_master_xpub()
+        bip32.get_xpub()
         == bip32.get_xpub_from_path("m")
         == bip32.get_xpub_from_path([])
     )
     assert (
-        bip32.get_master_xpriv()
+        bip32.get_xpriv()
         == bip32.get_xpriv_from_path("m")
         == bip32.get_xpriv_from_path([])
     )
-    master_non_extended_pubkey = bip32.get_privkey_from_path("m")
-    pubkey = coincurve.PublicKey.from_secret(master_non_extended_pubkey)
+    non_extended_pubkey = bip32.get_privkey_from_path("m")
+    pubkey = coincurve.PublicKey.from_secret(non_extended_pubkey)
     assert pubkey.format() == bip32.get_pubkey_from_path("m")
     # But getting from "m'" does not make sense
     with pytest.raises(ValueError, match="invalid format"):
@@ -435,11 +435,11 @@ def test_sanity_checks():
     bip32 = BIP32.from_xpub(
         "xpub6C6zm7YgrLrnd7gXkyYDjQihT6F2ei9EYbNuSiDAjok7Ht56D5zbnv8WDoAJGg1RzKzK4i9U2FUwXG7TFGETFc35vpQ4sZBuYKntKMLshiq"
     )
-    bip32.get_master_xpub()
+    bip32.get_xpub()
     bip32.get_pubkey_from_path("m/0/1")
     bip32.get_xpub_from_path("m/10000/18")
     with pytest.raises(PrivateDerivationError):
-        bip32.get_master_xpriv()
+        bip32.get_xpriv()
         bip32.get_extended_privkey_from_path("m/0/1/2")
         bip32.get_privkey_from_path([9, 8])
         bip32.get_pubkey_from_path("m/0'/1")
