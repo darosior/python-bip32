@@ -41,7 +41,7 @@ class BIP32:
         chaincode,
         privkey=None,
         pubkey=None,
-        fingerprint=None,
+        fingerprint=bytes(4),
         depth=0,
         index=0,
         network="main",
@@ -81,10 +81,19 @@ class BIP32:
                 raise InvalidInputError("Invalid secp256k1 public key")
         else:
             pubkey = _privkey_to_pubkey(privkey)
+        if depth == 0:
+            if fingerprint != bytes(4):
+                raise InvalidInputError(
+                    "Fingerprint must be 0 if depth is 0 (master xpub)"
+                )
+            if index != 0:
+                raise InvalidInputError("Index must be 0 if depth is 0 (master xpub)")
+        if network not in ["main", "test"]:
+            raise InvalidInputError("Unknown network")
 
-        self.master_chaincode = chaincode
-        self.master_privkey = privkey
-        self.master_pubkey = pubkey
+        self.chaincode = chaincode
+        self.privkey = privkey
+        self.pubkey = pubkey
         self.parent_fingerprint = fingerprint
         self.depth = depth
         self.index = index
@@ -97,13 +106,13 @@ class BIP32:
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: chaincode (bytes), privkey (bytes)
         """
-        if self.master_privkey is None:
+        if self.privkey is None:
             raise PrivateDerivationError
 
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
 
-        chaincode, privkey = self.master_chaincode, self.master_privkey
+        chaincode, privkey = self.chaincode, self.privkey
         for index in path:
             if index & HARDENED_INDEX:
                 privkey, chaincode = _derive_hardened_private_child(
@@ -123,7 +132,7 @@ class BIP32:
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: privkey (bytes)
         """
-        if self.master_privkey is None:
+        if self.privkey is None:
             raise PrivateDerivationError
 
         return self.get_extended_privkey_from_path(path)[1]
@@ -138,11 +147,11 @@ class BIP32:
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
 
-        if _hardened_index_in_path(path) and self.master_privkey is None:
+        if _hardened_index_in_path(path) and self.privkey is None:
             raise PrivateDerivationError
 
-        chaincode, key = self.master_chaincode, self.master_privkey
-        pubkey = self.master_pubkey
+        chaincode, key = self.chaincode, self.privkey
+        pubkey = self.pubkey
         # We'll need the private key at some point anyway, so let's derive
         # everything from private keys.
         if _hardened_index_in_path(path):
@@ -180,16 +189,16 @@ class BIP32:
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
         :return: The encoded extended pubkey as str.
         """
-        if self.master_privkey is None:
+        if self.privkey is None:
             raise PrivateDerivationError
 
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
 
         if len(path) == 0:
-            return self.get_master_xpriv()
+            return self.get_xpriv()
         elif len(path) == 1:
-            parent_pubkey = self.master_pubkey
+            parent_pubkey = self.pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
         chaincode, privkey = self.get_extended_privkey_from_path(path)
@@ -214,13 +223,13 @@ class BIP32:
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
 
-        if _hardened_index_in_path(path) and self.master_privkey is None:
+        if _hardened_index_in_path(path) and self.privkey is None:
             raise PrivateDerivationError
 
         if len(path) == 0:
-            return self.get_master_xpub()
+            return self.get_xpub()
         elif len(path) == 1:
-            parent_pubkey = self.master_pubkey
+            parent_pubkey = self.pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
         chaincode, pubkey = self.get_extended_pubkey_from_path(path)
@@ -235,28 +244,28 @@ class BIP32:
 
         return base58.b58encode_check(extended_key).decode()
 
-    def get_master_xpriv(self):
-        """Get the encoded extended private key of the master private key"""
-        if self.master_privkey is None:
+    def get_xpriv(self):
+        """Get the encoded extended private key."""
+        if self.privkey is None:
             raise PrivateDerivationError
         extended_key = _serialize_extended_key(
-            self.master_privkey,
+            self.privkey,
             self.depth,
             self.parent_fingerprint,
             self.index,
-            self.master_chaincode,
+            self.chaincode,
             self.network,
         )
         return base58.b58encode_check(extended_key).decode()
 
-    def get_master_xpub(self):
-        """Get the encoded extended public key of the master public key"""
+    def get_xpub(self):
+        """Get the encoded extended public key."""
         extended_key = _serialize_extended_key(
-            self.master_pubkey,
+            self.pubkey,
             self.depth,
             self.parent_fingerprint,
             self.index,
-            self.master_chaincode,
+            self.chaincode,
             self.network,
         )
         return base58.b58encode_check(extended_key).decode()
@@ -283,21 +292,11 @@ class BIP32:
         if key[0] != 0:
             raise ParsingError("Invalid xpriv: private key prefix must be 0")
 
-        if depth == 0:
-            if fingerprint != b"\x00\x00\x00\x00":
-                raise ParsingError(
-                    "Invalid xpriv: fingerprint must be 0 if depth is 0 (master xpriv)"
-                )
-            if index != 0:
-                raise ParsingError(
-                    "Invalid xpriv: index must be 0 if depth is 0 (master xpriv)"
-                )
-
-        if network is None:
-            raise ParsingError("Invalid xpriv: unknown network")
-
-        # We need to remove the trailing `0` before the actual private key !!
-        return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
+        try:
+            # We need to remove the trailing `0` before the actual private key !!
+            return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
+        except InvalidInputError as e:
+            raise ParsingError(f"Invalid xpriv: '{e}'")
 
     @classmethod
     def from_xpub(cls, xpub):
@@ -317,19 +316,6 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
-
-        if depth == 0:
-            if fingerprint != b"\x00\x00\x00\x00":
-                raise ParsingError(
-                    "Invalid xpub: fingerprint must be 0 if depth is 0 (master xpub)"
-                )
-            if index != 0:
-                raise ParsingError(
-                    "Invalid xpub: index must be 0 if depth is 0 (master xpub)"
-                )
-
-        if network is None:
-            raise ParsingError("Invalid xpub: unknown network")
 
         try:
             return BIP32(chaincode, None, key, fingerprint, depth, index, network)
