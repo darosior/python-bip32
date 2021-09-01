@@ -41,7 +41,7 @@ class BIP32:
         chaincode,
         privkey=None,
         pubkey=None,
-        fingerprint=None,
+        fingerprint=bytes(4),
         depth=0,
         index=0,
         network="main",
@@ -81,6 +81,15 @@ class BIP32:
                 raise InvalidInputError("Invalid secp256k1 public key")
         else:
             pubkey = _privkey_to_pubkey(privkey)
+        if depth == 0:
+            if fingerprint != bytes(4):
+                raise InvalidInputError(
+                    "Fingerprint must be 0 if depth is 0 (master xpub)"
+                )
+            if index != 0:
+                raise InvalidInputError(
+                    "Index must be 0 if depth is 0 (master xpub)"
+                )
 
         self.chaincode = chaincode
         self.privkey = privkey
@@ -283,21 +292,14 @@ class BIP32:
         if key[0] != 0:
             raise ParsingError("Invalid xpriv: private key prefix must be 0")
 
-        if depth == 0:
-            if fingerprint != b"\x00\x00\x00\x00":
-                raise ParsingError(
-                    "Invalid xpriv: fingerprint must be 0 if depth is 0 (master xpriv)"
-                )
-            if index != 0:
-                raise ParsingError(
-                    "Invalid xpriv: index must be 0 if depth is 0 (master xpriv)"
-                )
-
         if network is None:
             raise ParsingError("Invalid xpriv: unknown network")
 
-        # We need to remove the trailing `0` before the actual private key !!
-        return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
+        try:
+            # We need to remove the trailing `0` before the actual private key !!
+            return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
+        except InvalidInputError as e:
+            raise ParsingError(f"Invalid xpriv: '{e}'")
 
     @classmethod
     def from_xpub(cls, xpub):
@@ -317,16 +319,6 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
-
-        if depth == 0:
-            if fingerprint != b"\x00\x00\x00\x00":
-                raise ParsingError(
-                    "Invalid xpub: fingerprint must be 0 if depth is 0 (master xpub)"
-                )
-            if index != 0:
-                raise ParsingError(
-                    "Invalid xpub: index must be 0 if depth is 0 (master xpub)"
-                )
 
         if network is None:
             raise ParsingError("Invalid xpub: unknown network")
