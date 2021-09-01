@@ -1,3 +1,14 @@
+# 2.0
+
+This is a breaking release.
+
+- Added test vector #5 for more sanity checks when deserializing an xpub or an
+  xpriv (see https://github.com/bitcoin/bips/pull/921).
+- Renamed `get_master_xpub` and `get_master_xpriv` to `get_xpub` and `get_xpriv`.
+- We now refuse to create a `BIP32` object with:
+  - An unknown network
+  - A depth of 0 (master) and a non-0 index or fingerprint
+
 ## 1.0
 
 - Added test vector #4 for private keys with leading zeros (see https://github.com/bitcoin/bips/pull/1030)
