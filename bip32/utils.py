@@ -185,9 +185,10 @@ def _unserialize_extended_key(extended_key):
     """
     assert isinstance(extended_key, bytes) and len(extended_key) == 78
     prefix = int.from_bytes(extended_key[:4], "big")
+    network = None
     if prefix in list(ENCODING_PREFIX["main"].values()):
         network = "main"
-    else:
+    elif prefix in list(ENCODING_PREFIX["test"].values()):
         network = "test"
     depth = extended_key[4]
     fingerprint = extended_key[5:9]

@@ -30,6 +30,11 @@ class InvalidInputError(ValueError):
         self.message = message
 
 
+class ParsingError(ValueError):
+    def __init__(self, message):
+        self.message = message
+
+
 class BIP32:
     def __init__(
         self,
@@ -274,6 +279,23 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
+
+        if key[0] != 0:
+            raise ParsingError("Invalid xpriv: private key prefix must be 0")
+
+        if depth == 0:
+            if fingerprint != b"\x00\x00\x00\x00":
+                raise ParsingError(
+                    "Invalid xpriv: fingerprint must be 0 if depth is 0 (master xpriv)"
+                )
+            if index != 0:
+                raise ParsingError(
+                    "Invalid xpriv: index must be 0 if depth is 0 (master xpriv)"
+                )
+
+        if network is None:
+            raise ParsingError("Invalid xpriv: unknown network")
+
         # We need to remove the trailing `0` before the actual private key !!
         return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
 
@@ -295,7 +317,24 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, None, key, fingerprint, depth, index, network)
+
+        if depth == 0:
+            if fingerprint != b"\x00\x00\x00\x00":
+                raise ParsingError(
+                    "Invalid xpub: fingerprint must be 0 if depth is 0 (master xpub)"
+                )
+            if index != 0:
+                raise ParsingError(
+                    "Invalid xpub: index must be 0 if depth is 0 (master xpub)"
+                )
+
+        if network is None:
+            raise ParsingError("Invalid xpub: unknown network")
+
+        try:
+            return BIP32(chaincode, None, key, fingerprint, depth, index, network)
+        except InvalidInputError as e:
+            raise ParsingError(f"Invalid xpub: '{e}'")
 
     @classmethod
     def from_seed(cls, seed, network="main"):
