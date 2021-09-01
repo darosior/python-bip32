@@ -87,9 +87,9 @@ class BIP32:
                     "Fingerprint must be 0 if depth is 0 (master xpub)"
                 )
             if index != 0:
-                raise InvalidInputError(
-                    "Index must be 0 if depth is 0 (master xpub)"
-                )
+                raise InvalidInputError("Index must be 0 if depth is 0 (master xpub)")
+        if network not in ["main", "test"]:
+            raise InvalidInputError("Unknown network")
 
         self.chaincode = chaincode
         self.privkey = privkey
@@ -292,9 +292,6 @@ class BIP32:
         if key[0] != 0:
             raise ParsingError("Invalid xpriv: private key prefix must be 0")
 
-        if network is None:
-            raise ParsingError("Invalid xpriv: unknown network")
-
         try:
             # We need to remove the trailing `0` before the actual private key !!
             return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
@@ -319,9 +316,6 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
-
-        if network is None:
-            raise ParsingError("Invalid xpub: unknown network")
 
         try:
             return BIP32(chaincode, None, key, fingerprint, depth, index, network)
