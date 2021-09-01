@@ -12,6 +12,8 @@ from .utils import (
     _hardened_index_in_path,
     _privkey_to_pubkey,
     _deriv_path_str_to_list,
+    _pubkey_is_valid,
+    _privkey_is_valid,
 )
 
 
@@ -24,6 +26,11 @@ class PrivateDerivationError(ValueError):
 
 
 class InvalidInputError(ValueError):
+    def __init__(self, message):
+        self.message = message
+
+
+class ParsingError(ValueError):
     def __init__(self, message):
         self.message = message
 
@@ -65,9 +72,13 @@ class BIP32:
         if privkey is not None:
             if not isinstance(privkey, bytes):
                 raise InvalidInputError("'privkey' must be bytes")
+            if not _privkey_is_valid(privkey):
+                raise InvalidInputError("Invalid secp256k1 private key")
         if pubkey is not None:
             if not isinstance(pubkey, bytes):
                 raise InvalidInputError("'pubkey' must be bytes")
+            if not _pubkey_is_valid(pubkey):
+                raise InvalidInputError("Invalid secp256k1 public key")
         else:
             pubkey = _privkey_to_pubkey(privkey)
 
@@ -268,6 +279,23 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
+
+        if key[0] != 0:
+            raise ParsingError("Invalid xpriv: private key prefix must be 0")
+
+        if depth == 0:
+            if fingerprint != b"\x00\x00\x00\x00":
+                raise ParsingError(
+                    "Invalid xpriv: fingerprint must be 0 if depth is 0 (master xpriv)"
+                )
+            if index != 0:
+                raise ParsingError(
+                    "Invalid xpriv: index must be 0 if depth is 0 (master xpriv)"
+                )
+
+        if network is None:
+            raise ParsingError("Invalid xpriv: unknown network")
+
         # We need to remove the trailing `0` before the actual private key !!
         return BIP32(chaincode, key[1:], None, fingerprint, depth, index, network)
 
@@ -289,7 +317,24 @@ class BIP32:
             chaincode,
             key,
         ) = _unserialize_extended_key(extended_key)
-        return BIP32(chaincode, None, key, fingerprint, depth, index, network)
+
+        if depth == 0:
+            if fingerprint != b"\x00\x00\x00\x00":
+                raise ParsingError(
+                    "Invalid xpub: fingerprint must be 0 if depth is 0 (master xpub)"
+                )
+            if index != 0:
+                raise ParsingError(
+                    "Invalid xpub: index must be 0 if depth is 0 (master xpub)"
+                )
+
+        if network is None:
+            raise ParsingError("Invalid xpub: unknown network")
+
+        try:
+            return BIP32(chaincode, None, key, fingerprint, depth, index, network)
+        except InvalidInputError as e:
+            raise ParsingError(f"Invalid xpub: '{e}'")
 
     @classmethod
     def from_seed(cls, seed, network="main"):
