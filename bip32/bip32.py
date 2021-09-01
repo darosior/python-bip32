@@ -12,6 +12,8 @@ from .utils import (
     _hardened_index_in_path,
     _privkey_to_pubkey,
     _deriv_path_str_to_list,
+    _pubkey_is_valid,
+    _privkey_is_valid,
 )
 
 
@@ -65,9 +67,13 @@ class BIP32:
         if privkey is not None:
             if not isinstance(privkey, bytes):
                 raise InvalidInputError("'privkey' must be bytes")
+            if not _privkey_is_valid(privkey):
+                raise InvalidInputError("Invalid secp256k1 private key")
         if pubkey is not None:
             if not isinstance(pubkey, bytes):
                 raise InvalidInputError("'pubkey' must be bytes")
+            if not _pubkey_is_valid(pubkey):
+                raise InvalidInputError("Invalid secp256k1 public key")
         else:
             pubkey = _privkey_to_pubkey(privkey)
 

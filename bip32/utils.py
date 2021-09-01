@@ -22,6 +22,24 @@ class BIP32DerivationError(Exception):
     """We derived an invalid (secret > N or point(secret) is infinity) key!"""
 
 
+def _privkey_is_valid(privkey):
+    """Takes bytes and returns True if it's a valid secp256k1 privkey"""
+    try:
+        coincurve.PrivateKey(privkey)
+        return True
+    except ValueError:
+        return False
+
+
+def _pubkey_is_valid(pubkey):
+    """Takes bytes and returns True if it's a valid secp256k1 pubkey"""
+    try:
+        coincurve.PublicKey(pubkey)
+        return True
+    except ValueError:
+        return False
+
+
 def _privkey_to_pubkey(privkey):
     """Takes a 32 bytes privkey and returns a 33 bytes secp256k1 pubkey"""
     return coincurve.PublicKey.from_secret(privkey).format()
