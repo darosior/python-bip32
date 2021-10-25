@@ -116,6 +116,14 @@ include an index `>= HARDENED_INDEX`.
 
 Equivalent to `get_xpriv_from_path([])`.
 
+### get_xpriv_bytes(path)
+
+Equivalent to `get_xpriv([])`, but not serialized in base58
+
 ### get_xpub(path)
 
 Equivalent to `get_xpub_from_path([])`.
+
+### get_xpub_bytes(path)
+
+Equivalent to `get_xpub([])`, but not serialized in base58

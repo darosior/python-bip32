@@ -245,10 +245,14 @@ class BIP32:
         return base58.b58encode_check(extended_key).decode()
 
     def get_xpriv(self):
+        """Get the base58 encoded extended private key."""
+        return base58.b58encode_check(self.get_xpriv_bytes()).decode()
+
+    def get_xpriv_bytes(self):
         """Get the encoded extended private key."""
         if self.privkey is None:
             raise PrivateDerivationError
-        extended_key = _serialize_extended_key(
+        return _serialize_extended_key(
             self.privkey,
             self.depth,
             self.parent_fingerprint,
@@ -256,11 +260,14 @@ class BIP32:
             self.chaincode,
             self.network,
         )
-        return base58.b58encode_check(extended_key).decode()
 
     def get_xpub(self):
         """Get the encoded extended public key."""
-        extended_key = _serialize_extended_key(
+        return base58.b58encode_check(self.get_xpub_bytes()).decode()
+
+    def get_xpub_bytes(self):
+        """Get the encoded extended public key."""
+        return _serialize_extended_key(
             self.pubkey,
             self.depth,
             self.parent_fingerprint,
@@ -268,7 +275,6 @@ class BIP32:
             self.chaincode,
             self.network,
         )
-        return base58.b58encode_check(extended_key).decode()
 
     @classmethod
     def from_xpriv(cls, xpriv):
