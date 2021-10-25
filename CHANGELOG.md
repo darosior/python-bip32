@@ -1,3 +1,7 @@
+# 2.1
+
+- Two new methods were added: `get_xpub_bytes()` and `get_xpriv_bytes()`
+
 # 2.0
 
 This is a breaking release.
