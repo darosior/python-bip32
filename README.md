@@ -112,18 +112,18 @@ path.
 Note that you don't need to have provided the master private key if the path doesn't
 include an index `>= HARDENED_INDEX`.
 
-### get_xpriv(path)
+#### get_xpriv(path)
 
 Equivalent to `get_xpriv_from_path([])`.
 
-### get_xpriv_bytes(path)
+#### get_xpriv_bytes(path)
 
 Equivalent to `get_xpriv([])`, but not serialized in base58
 
-### get_xpub(path)
+#### get_xpub(path)
 
 Equivalent to `get_xpub_from_path([])`.
 
-### get_xpub_bytes(path)
+#### get_xpub_bytes(path)
 
 Equivalent to `get_xpub([])`, but not serialized in base58
