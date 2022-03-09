@@ -1,3 +1,10 @@
+# Unreleased
+
+This is a breaking release.
+
+- Python 3.10 support.
+- Drop Python 3.6 support (EOL).
+
 # 2.1
 
 - Two new methods were added: `get_xpub_bytes()` and `get_xpriv_bytes()`
