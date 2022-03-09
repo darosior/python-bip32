@@ -4,6 +4,7 @@ This is a breaking release.
 
 - Python 3.10 support.
 - Drop Python 3.6 support (EOL).
+- Support Coincurve up to version 17.
 
 # 2.1
 
