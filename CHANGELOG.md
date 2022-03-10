@@ -1,4 +1,4 @@
-# Unreleased
+# 3.0
 
 This is a breaking release.
 
