@@ -1,2 +1,2 @@
-coincurve>=15.0,<=17.*
+coincurve>=15.0,<18
 base58~=2.0
