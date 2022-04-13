@@ -1,3 +1,7 @@
+# 3.1
+
+- Actually support Coincurve up to version 17..
+
 # 3.0
 
 This is a breaking release.
