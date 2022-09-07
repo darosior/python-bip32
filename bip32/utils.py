@@ -125,10 +125,22 @@ def _derive_public_child(pubkey, chaincode, index):
     return child_pub.format(), payload[32:]
 
 
+def _ripemd160(data):
+    try:
+        rip = hashlib.new("ripemd160")
+        rip.update(data)
+        return rip.digest()
+    except BaseException:
+        # Implementations may ship hashlib without ripemd160.
+        # In that case, fallback to custom pure Python implementation.
+        # WARNING: the implementation in ripemd160.py is not constant-time.
+        from . import ripemd160
+
+        return ripemd160.ripemd160(data)
+
+
 def _pubkey_to_fingerprint(pubkey):
-    rip = hashlib.new("ripemd160")
-    rip.update(hashlib.sha256(pubkey).digest())
-    return rip.digest()[:4]
+    return _ripemd160(hashlib.sha256(pubkey).digest())[:4]
 
 
 def _serialize_extended_key(key, depth, parent, index, chaincode, network="main"):
