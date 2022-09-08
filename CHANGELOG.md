@@ -1,3 +1,9 @@
+# 3.3
+
+- Implement a pure Python fallback for RIPEMD160 in case `hashlib` does not provide it.
+  NOTE: the Python implementation was copied from a test-only implementation and is not constant
+  time. This shouldn't be an issue for the usage we make of it here.
+
 # 3.1
 
 - Actually support Coincurve up to version 17..
