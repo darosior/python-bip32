@@ -8,8 +8,16 @@ REGEX_DERIVATION_PATH = re.compile("^m(/[0-9]+['hH]?)*$")
 HARDENED_INDEX = 0x80000000
 ENCODING_PREFIX = {
     "main": {
-        "private": 0x0488ADE4,
+        "private": 0x0488ADE4, # xpub/xprv
         "public": 0x0488B21E,
+    },
+    "main-p2wpkh-p2sh": { # ypub/yprv
+        "private": 0x049d7878,
+        "public": 0x049d7cb2,
+    },
+    "main-p2wpkh": {
+        "private": 0x04b2430c, # zpub/zprv (bech32)
+        "public": 0x04b24746,
     },
     "test": {
         "private": 0x04358394,
