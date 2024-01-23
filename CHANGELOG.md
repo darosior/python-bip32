@@ -1,8 +1,11 @@
+# 3.5
+
+- Support Coincurve up to version 19. This version supports the latest libsecp.
+
 # 3.4
 
 - Support Coincurve up to version 18. This version includes support for BIP340 x-only keys and
   Schnorr signatures.
-
 
 # 3.3
 
