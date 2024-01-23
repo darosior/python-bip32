@@ -28,7 +28,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install pytest
         pip install -r requirements.txt -r tests/requirements.txt
-        python setup.py install
+    - name: Under Windows, install coincurve's missing `cffi` dependency
+      if: matrix.os == 'windows-latest'
+      run: pip install cffi
+    - name: Actually run the tests
+      run: python setup.py install
     - name: Test with pytest
       run: |
         pytest -vvv
