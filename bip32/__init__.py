@@ -1,7 +1,6 @@
-from .bip32 import BIP32, PrivateDerivationError, InvalidInputError
-from .utils import BIP32DerivationError, HARDENED_INDEX
-
-__version__ = "3.4"
+from .__version__ import __version__
+from .bip32 import BIP32, InvalidInputError, PrivateDerivationError
+from .utils import HARDENED_INDEX, BIP32DerivationError
 
 __all__ = [
     "BIP32",
@@ -9,4 +8,5 @@ __all__ = [
     "PrivateDerivationError",
     "InvalidInputError",
     "HARDENED_INDEX",
+    "__version__",
 ]
