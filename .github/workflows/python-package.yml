@@ -13,7 +13,8 @@ jobs:
         python-version: [3.7, 3.8, 3.9, '3.10']
         os:
           - ubuntu-latest
-          - macOS-latest
+          - macos-13  # (non-M1)
+          - macos-latest  # (M1)
           - windows-latest
 
     runs-on: ${{ matrix.os }}
