@@ -100,7 +100,6 @@ class BIP32:
         self.index = index
         self.network = network
 
-    
     def get_extended_privkey_from_path(self, path):
         """Get an extended privkey from a derivation path.
 
