@@ -1,6 +1,6 @@
 # python-bip32
 
-A basic implementation of the [bip-0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki).
+A basic implementation of [BIP-0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki).
 
 ## Usage
 
@@ -112,18 +112,22 @@ path.
 Note that you don't need to have provided the master private key if the path doesn't
 include an index `>= HARDENED_INDEX`.
 
-#### get_xpriv(path)
+#### get_xpriv()
 
 Equivalent to `get_xpriv_from_path([])`.
 
-#### get_xpriv_bytes(path)
+#### get_xpriv_bytes()
 
-Equivalent to `get_xpriv([])`, but not serialized in base58
+Equivalent to `get_xpriv([])`, but not serialized in base58.
 
-#### get_xpub(path)
+#### get_xpub()
 
 Equivalent to `get_xpub_from_path([])`.
 
-#### get_xpub_bytes(path)
+#### get_xpub_bytes()
 
-Equivalent to `get_xpub([])`, but not serialized in base58
+Equivalent to `get_xpub([])`, but not serialized in base58.
+
+#### get_fingerprint()
+
+Returns `fingerprint (bytes)`, equivalent to `utils._pubkey_to_fingerprint(self.pubkey)`.
