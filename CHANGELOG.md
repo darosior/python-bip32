@@ -1,3 +1,14 @@
+# 4.0
+
+This is a breaking release.
+
+- Drop support for Python 3.7.
+- Support Coincurve up to version 20.
+- Drop base58 dependency. Port base58 code directly in-tree as a `base58` module.
+- Fix circular dependency in source installation.
+- A new method `get_fingerprint()` was added.
+
+
 # 3.4
 
 - Support Coincurve up to version 18. This version includes support for BIP340 x-only keys and
