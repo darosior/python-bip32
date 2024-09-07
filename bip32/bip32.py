@@ -1,7 +1,7 @@
-import base58
 import hashlib
 import hmac
 
+from .base58 import b58encode_check, b58decode_check
 from .utils import (
     HARDENED_INDEX,
     _derive_hardened_private_child,
@@ -211,7 +211,7 @@ class BIP32:
             self.network,
         )
 
-        return base58.b58encode_check(extended_key).decode()
+        return b58encode_check(extended_key).decode()
 
     def get_xpub_from_path(self, path):
         """Get an encoded extended pubkey from a derivation path.
@@ -242,11 +242,11 @@ class BIP32:
             self.network,
         )
 
-        return base58.b58encode_check(extended_key).decode()
+        return b58encode_check(extended_key).decode()
 
     def get_xpriv(self):
         """Get the base58 encoded extended private key."""
-        return base58.b58encode_check(self.get_xpriv_bytes()).decode()
+        return b58encode_check(self.get_xpriv_bytes()).decode()
 
     def get_xpriv_bytes(self):
         """Get the encoded extended private key."""
@@ -263,7 +263,7 @@ class BIP32:
 
     def get_xpub(self):
         """Get the encoded extended public key."""
-        return base58.b58encode_check(self.get_xpub_bytes()).decode()
+        return b58encode_check(self.get_xpub_bytes()).decode()
 
     def get_xpub_bytes(self):
         """Get the encoded extended public key."""
@@ -285,7 +285,7 @@ class BIP32:
         if not isinstance(xpriv, str):
             raise InvalidInputError("'xpriv' must be a string")
 
-        extended_key = base58.b58decode_check(xpriv)
+        extended_key = b58decode_check(xpriv)
         (
             network,
             depth,
@@ -313,7 +313,7 @@ class BIP32:
         if not isinstance(xpub, str):
             raise InvalidInputError("'xpub' must be a string")
 
-        extended_key = base58.b58decode_check(xpub)
+        extended_key = b58decode_check(xpub)
         (
             network,
             depth,
