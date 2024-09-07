@@ -281,7 +281,6 @@ class BIP32:
         """Get the public key fingerprint."""
         return _pubkey_to_fingerprint(self.pubkey)
 
-
     @classmethod
     def from_xpriv(cls, xpriv):
         """Get a BIP32 "wallet" out of this xpriv
