@@ -1,1 +1,1 @@
-coincurve>=15.0,<21
+coincurve>=15.0,<22
