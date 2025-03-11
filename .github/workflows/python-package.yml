@@ -34,7 +34,7 @@ jobs:
         brew install autoconf automake libffi libtool pkg-config python
         pip install -r requirements.txt
     - name: Install python-bip32 from source
-      run: python setup.py install
+      run: pip install .
     - name: Test with pytest
       run: |
         pip install -r tests/requirements.txt
@@ -72,4 +72,4 @@ jobs:
         pip install setuptools
         pip install -r tests/requirements.txt
         pip install -I coincurve==${{ matrix.coincurve-version }}
-        python setup.py install
+        pip install .
