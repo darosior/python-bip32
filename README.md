@@ -1,6 +1,6 @@
 # python-bip32
 
-A basic implementation of [BIP-0032](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki).
+A minimalistic implementation of [BIP 32](https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki).
 
 ## Usage
 
