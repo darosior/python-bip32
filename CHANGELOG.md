@@ -1,3 +1,11 @@
+# 5.0
+
+This is a breaking release.
+
+- Migrate project to new `pyproject.toml` standard from `setup.py`/`requirements.txt`.
+- As part of migration, top-level `__version__` variable was dropped from the package.
+- Support for Python 3.8 was dropped due to a breaking change in the way setuptools interpret the license keys in `pyproject.toml`.
+
 # 4.0
 
 This is a breaking release.
