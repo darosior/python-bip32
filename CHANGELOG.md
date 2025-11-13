@@ -1,3 +1,7 @@
+# 5.1
+
+- Support Coincurve up to version 21. This version notably bumps libsecp to version 0.6.0 and gets rid of all runtime dependencies.
+
 # 5.0
 
 This is a breaking release.
