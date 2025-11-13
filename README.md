@@ -44,7 +44,7 @@ This uses [`coincurve`](https://github.com/ofek/coincurve) as a wrapper for [`li
 # From the root of the repository
 python3 -m venv venv
 . venv/bin/activate
-pip install -r requirements.txt && pip install pytest
+pip install -r tests/requirements.txt && pip install pytest
 PYTHONPATH=$PYTHONPATH:$PWD/bip32 pytest -vvv
 ```
 
