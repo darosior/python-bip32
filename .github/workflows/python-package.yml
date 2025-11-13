@@ -24,15 +24,8 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install pip and setuptools
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools
-    - name: On MacOS, install coincurve's dependencies and install it from wheels  # FIXME: installing from source fails for some reason.
-      if: matrix.os == 'macos-latest' || matrix.os == 'macos-13'
-      run: |
-        brew install autoconf automake libffi libtool pkg-config python
-        pip install -r requirements.txt
+    - name: Upgrade pip
+      run: python -m pip install --upgrade pip
     - name: Install python-bip32 from source
       run: pip install .
     - name: Test with pytest

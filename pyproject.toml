@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]  # Because of the license keys. See https://setuptools.pypa.io/en/stable/history.html#v77-0-3
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bip32"
+version = "4.0.0"
+dependencies = [
+    "coincurve>=15.0,<21",
+]
+requires-python = ">=3.8"
+authors = [
+    {name = "Antoine Poinsot", email = "darosior@protonmail.com"},
+]
+maintainers = [
+    {name = "Antoine Poinsot", email = "darosior@protonmail.com"},
+]
+description = "Minimalistic implementation of BIP32 (Bitcoin HD wallets)"
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENCE"]
+keywords = ["bitcoin", "key derivation", "HD wallet"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+]
+
+[project.urls]
+Homepage = "https://github.com/darosior/python-bip32"
+Repository = "https://github.com/darosior/python-bip32"
+Issues = "https://github.com/darosior/python-bip32/issues"
+"Bug Tracker" = "https://github.com/darosior/python-bip32/issues"
+Changelog = "https://github.com/darosior/python-bip32/tree/master/CHANGELOG.md"
