@@ -50,7 +50,7 @@ jobs:
   coincurve_versions:
     strategy:
       matrix:
-        coincurve-version: [15, 16, 17, 18, '19.0.1', 20]
+        coincurve-version: [15, 16, 17, 18, '19.0.1', 20, 21]
 
     runs-on: ubuntu-latest
     steps:
