@@ -183,13 +183,17 @@ class BIP32:
         """
         return self.get_extended_pubkey_from_path(path)[1]
 
-    def get_xpriv_from_path(self, path):
+    def get_xpriv_from_path(self, path, script="p2pkh"):
         """Get an encoded extended privkey from a derivation path.
 
         :param path: A list of integers (index of each depth) or a string with
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
+        :param script: Can be "p2pkh" (legacy, xpub), "p2wpkh-p2sh" (ypub),
+                       "p2wpkh" (zpub). Defaults to "p2pkh".
         :return: The encoded extended pubkey as str.
         """
+        assert script in ["p2pkh", "p2wpkh-p2sh", "p2wpkh"]
+
         if self.privkey is None:
             raise PrivateDerivationError
 
@@ -209,18 +213,22 @@ class BIP32:
             parent_pubkey,
             path[-1],
             chaincode,
-            self.network,
+            "main-"+script if script != "p2pkh" and script else self.network,
         )
 
         return b58encode_check(extended_key).decode()
 
-    def get_xpub_from_path(self, path):
+    def get_xpub_from_path(self, path, script="p2pkh"):
         """Get an encoded extended pubkey from a derivation path.
 
         :param path: A list of integers (index of each depth) or a string with
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
+        :param script: Can be "p2pkh" (legacy, xpub), "p2wpkh-p2sh" (ypub),
+                       "p2wpkh" (zpub). Defaults to "p2pkh".
         :return: The encoded extended pubkey as str.
         """
+        assert script in ["p2pkh", "p2wpkh-p2sh", "p2wpkh"]
+
         if isinstance(path, str):
             path = _deriv_path_str_to_list(path)
 
@@ -240,7 +248,7 @@ class BIP32:
             parent_pubkey,
             path[-1],
             chaincode,
-            self.network,
+            "main-"+script if script != "p2pkh" and script else self.network,
         )
 
         return b58encode_check(extended_key).decode()
