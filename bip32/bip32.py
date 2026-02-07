@@ -89,8 +89,6 @@ class BIP32:
                 )
             if index != 0:
                 raise InvalidInputError("Index must be 0 if depth is 0 (master xpub)")
-        if network not in ["main", "test"]:
-            raise InvalidInputError("Unknown network")
 
         self.chaincode = chaincode
         self.privkey = privkey
@@ -179,7 +177,7 @@ class BIP32:
 
         :param path: A list of integers (index of each depth) or a string with
                      m/x/x'/x notation. (e.g. m/0'/1/2'/2 or m/0H/1/2H/2).
-        :return: privkey (bytes)
+        :return: pubkey (bytes)
         """
         return self.get_extended_pubkey_from_path(path)[1]
 
@@ -198,7 +196,7 @@ class BIP32:
 
         if len(path) == 0:
             return self.get_xpriv()
-        elif len(path) == 1:
+        if len(path) == 1:
             parent_pubkey = self.pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
@@ -229,7 +227,7 @@ class BIP32:
 
         if len(path) == 0:
             return self.get_xpub()
-        elif len(path) == 1:
+        if len(path) == 1:
             parent_pubkey = self.pubkey
         else:
             parent_pubkey = self.get_pubkey_from_path(path[:-1])
@@ -244,6 +242,19 @@ class BIP32:
         )
 
         return b58encode_check(extended_key).decode()
+
+    def get_key_origin_xkey_from_path(self, key_type, path):
+        """Get encoded extended key with origin info from a derivation path.
+        :param key_type: 'xpub' for pubkeys or 'xpriv' for privkeys.
+        :param path: a string with m/x/x'/x notation. (e.g. m/0'/1/2'/2
+                    or m/0H/1/2H/2).
+        :return: BIP380 key origin followed by the encoded extended key as str
+        """
+        assert key_type in ["xpub", "xpriv"]
+        if not isinstance(path, str):
+            raise InvalidInputError("'path' must be string")
+        key = getattr(self, f"get_{key_type}_from_path")(path)
+        return f"[{self.get_fingerprint().hex()}{path[1:]}]{key}"
 
     def get_xpriv(self):
         """Get the base58 encoded extended private key."""

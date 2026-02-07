@@ -18,6 +18,8 @@ A minimalistic implementation of [BIP 32](https://github.com/bitcoin/bips/blob/m
 # You can also use "h" or "H" to signal for hardened derivation
 >>> bip32.get_xpub_from_path("m/0h/42")
 'xpub69uEaVYoN1mZyMon8qwRP41YjYyevp3YxJ68ymBGV7qmXZ9rsbMy9kBZnLNPg3TLjKd2EnMw5BtUFQCGrTVDjQok859LowMV2SEooseLCt1'
+>>> bip32.get_key_origin_xkey_from_path("xpub", "m/0h/42")
+'[b2b1f0cf/0h/42]xpub69uEaVYoN1mZyMon8qwRP41YjYyevp3YxJ68ymBGV7qmXZ9rsbMy9kBZnLNPg3TLjKd2EnMw5BtUFQCGrTVDjQok859LowMV2SEooseLCt1'
 # You can use pubkey-only derivation
 >>> bip32 = BIP32.from_xpub("xpub6AKC3u8URPxDojLnFtNdEPFkNsXxHfgRhySvVfEJy9SVvQAn14XQjAoFY48mpjgutJNfA54GbYYRpR26tFEJHTHhfiiZZ2wdBBzydVp12yU")
 >>> bip32.get_xpub_from_path([42, 43])
