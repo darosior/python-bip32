@@ -1,4 +1,4 @@
-import coincurve
+import bitcurve
 import hashlib
 import hmac
 import re
@@ -25,7 +25,7 @@ class BIP32DerivationError(Exception):
 def _privkey_is_valid(privkey):
     """Takes bytes and returns True if it's a valid secp256k1 privkey"""
     try:
-        coincurve.PrivateKey(privkey)
+        bitcurve.PrivateKey(privkey)
         return True
     except ValueError:
         return False
@@ -34,7 +34,7 @@ def _privkey_is_valid(privkey):
 def _pubkey_is_valid(pubkey):
     """Takes bytes and returns True if it's a valid secp256k1 pubkey"""
     try:
-        coincurve.PublicKey(pubkey)
+        bitcurve.PublicKey(pubkey)
         return True
     except ValueError:
         return False
@@ -42,7 +42,7 @@ def _pubkey_is_valid(pubkey):
 
 def _privkey_to_pubkey(privkey):
     """Takes a 32 bytes privkey and returns a 33 bytes secp256k1 pubkey"""
-    return coincurve.PublicKey.from_secret(privkey).format()
+    return bitcurve.PublicKey.from_secret(privkey).format()
 
 
 def _derive_unhardened_private_child(privkey, chaincode, index):
@@ -62,7 +62,7 @@ def _derive_unhardened_private_child(privkey, chaincode, index):
         chaincode, pubkey + index.to_bytes(4, "big"), hashlib.sha512
     ).digest()
     try:
-        child_private = coincurve.PrivateKey(payload[:32]).add(privkey)
+        child_private = bitcurve.PrivateKey(payload[:32]).add(privkey)
     except ValueError:
         raise BIP32DerivationError(
             "Invalid private key at index {}, try the " "next one!".format(index)
@@ -86,7 +86,7 @@ def _derive_hardened_private_child(privkey, chaincode, index):
         chaincode, b"\x00" + privkey + index.to_bytes(4, "big"), hashlib.sha512
     ).digest()
     try:
-        child_private = coincurve.PrivateKey(payload[:32]).add(privkey)
+        child_private = bitcurve.PrivateKey(payload[:32]).add(privkey)
     except ValueError:
         raise BIP32DerivationError(
             "Invalid private key at index {}, try the " "next one!".format(index)
@@ -110,14 +110,14 @@ def _derive_public_child(pubkey, chaincode, index):
         chaincode, pubkey + index.to_bytes(4, "big"), hashlib.sha512
     ).digest()
     try:
-        tmp_pub = coincurve.PublicKey.from_secret(payload[:32])
+        tmp_pub = bitcurve.PublicKey.from_secret(payload[:32])
     except ValueError:
         raise BIP32DerivationError(
             "Invalid private key at index {}, try the " "next one!".format(index)
         )
-    parent_pub = coincurve.PublicKey(pubkey)
+    parent_pub = bitcurve.PublicKey(pubkey)
     try:
-        child_pub = coincurve.PublicKey.combine_keys([tmp_pub, parent_pub])
+        child_pub = bitcurve.PublicKey.combine_keys([tmp_pub, parent_pub])
     except ValueError:
         raise BIP32DerivationError(
             "Invalid public key at index {}, try the " "next one!".format(index)

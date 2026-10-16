@@ -36,7 +36,7 @@ pip install bip32
 
 ### Dependencies
 
-This uses [`coincurve`](https://github.com/ofek/coincurve) as a wrapper for [`libsecp256k1`](https://github.com/bitcoin-core/secp256k1) for EC operations.
+This uses [`bitcurve`](https://pypi.org/project/bitcurve/) as a wrapper for [`libsecp256k1`](https://github.com/bitcoin-core/secp256k1) for EC operations.
 
 ### Running the test suite
 
