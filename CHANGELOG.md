@@ -1,3 +1,11 @@
+# Unreleased
+
+This is a breaking release.
+
+- Replace the `coincurve` dependency with [`bitcurve`](https://pypi.org/project/bitcurve/), a
+  coincurve-compatible libsecp256k1 binding that installs on Python 3.14 and later.
+- Drop support for Python 3.9, which `bitcurve` does not support. 3.9 hit EOL in October 2025
+
 # 5.0
 
 This is a breaking release.

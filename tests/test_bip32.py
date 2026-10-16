@@ -1,4 +1,4 @@
-import coincurve
+import bitcurve
 import os
 import pytest
 
@@ -437,7 +437,7 @@ def test_sanity_checks():
         == bip32.get_xpriv_from_path([])
     )
     non_extended_pubkey = bip32.get_privkey_from_path("m")
-    pubkey = coincurve.PublicKey.from_secret(non_extended_pubkey)
+    pubkey = bitcurve.PublicKey.from_secret(non_extended_pubkey)
     assert pubkey.format() == bip32.get_pubkey_from_path("m")
     # But getting from "m'" does not make sense
     with pytest.raises(ValueError, match="invalid format"):
